@@ -49,8 +49,8 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 	case "IntentRequest":
 		fmt.Println("IntentRequest")
 		intentName := getIntentName(req)
-		if intentName == "StartMeiro" {
-			response = handleStartMeiro(req, userId)
+		if intentName == "CurrentWeather" {
+			response = handleCurrentWeather(req, userId)
 		} else if intentName == "Retry" {
 			response = handleStartOver(req, userId)
 		} else if intentName == "Move" {
@@ -99,16 +99,16 @@ func getUserId(req protocol.CEKRequest) string {
 	return user["userId"]
 }
 
-func handleStartMeiro(req protocol.CEKRequest, userId string) protocol.CEKResponse {
+func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 	intent := req.Request.Intent
 	slots := intent.Slots
 
-	target := protocol.GetStringSlot(slots, "target")
+	target := protocol.GetStringSlot(slots, "city")
 
 	if target == "同じ" {
-		return handleStartOver(req, userId)
+		return handleStartOver(req, userID)
 	} else {
-		return handleStartNew(req, userId)
+		return handleStartNew(req, userID)
 	}
 }
 
