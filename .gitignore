@@ -1,0 +1,17 @@
+meiroya
+*.crt
+*.key
+*.swp
+.DS_Store
+.gopath/
+.idea
+bin/
+lib/
+vendor/
+design/
+main
+sourcetreeconfig
+config.yaml
+/tester
+log/
+
