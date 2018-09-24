@@ -339,4 +339,7 @@ func getIntentName(req protocol.CEKRequest) string {
 	return name
 }
 
-func HealthCheck(w http.ResponseWriter, r *http.Request) {}
+// HealthCheck just returns 'OK'.
+func HealthCheck(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, "OK")
+}

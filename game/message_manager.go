@@ -47,7 +47,7 @@ func init() {
 	messageMap = make(map[messageType]string)
 	messageMap2 = make(map[messageType][]string)
 
-	messageMap[WelcomeMsg] = "透明迷路にようこそ{[500]}！ゲームを始める場合は、スタート、と言って下さい。"
+	messageMap[WelcomeMsg] = "世界の天気にようこそ{[500]}！どこの天気が知りたいですか？"
 
 	messageMap[START_MSG_NEW] = "新しい迷路です。大きさは%dかける%d、スタートは左下%s、ゴールは右上%sです。"
 	messageMap[START_MSG_NEW_SIMPLE] = "新しい迷路です。スタートは左下%s、ゴールは右上%sです。"
