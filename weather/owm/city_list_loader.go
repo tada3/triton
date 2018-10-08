@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	TX_SIZE = 100
+	txSize = 1000
 )
 
 type City struct {
@@ -66,50 +66,71 @@ func LoadCityList(filepath string) (int64, error) {
 
 }
 
-func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (commited int64, err error) {
+func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (committed int64, err error) {
+	fmt.Println("XXXXX insertCityList 000")
 	defer func() {
+		fmt.Println("XXXXXXXXXXXXXX defer()")
 		if r := recover(); r != nil {
 			fmt.Println("Recovered in insertCityList!", r)
 			dbc.RollbackTx()
-			err = errors.New("Unexpected error!")
+			err = errors.New("unexpected error")
 		}
 	}()
 
-	stmt, err := dbc.PrepareStmt("INSERT INTO city_list VALUES(?,?,?,?)")
+	stmt, err := dbc.PrepareStmt("INSERT INTO city_list VALUES(?,?,?,?,?)")
 	if err != nil {
-		return commited, err
+		return committed, err
 	}
+
+	fmt.Println("XXXXX insertCityList 100")
 
 	err = dbc.BeginTx()
 	count := int64(0)
-	committed := int64(0)
+	// committed := int64(0)
 	for decoder.More() {
-		fmt.Println("XXXXXXX")
+		fmt.Printf("XXXXXXX FOR LOOP 000 count=%d\n", count)
+
+		if committed > 100 && count == 123 {
+			fmt.Println("XXXXXXX This is for tesing!!")
+			return handleTxError(errors.New("testdesu"), dbc, committed)
+		}
 		var city City
 
 		err := decoder.Decode(&city)
 		if err != nil {
-			return committed, err
+			return handleTxError(err, dbc, committed)
 		}
 		fmt.Printf("city: %v\n", city.Name)
 
 		stmt.Exec(city.Id, city.Name, city.Country, city.Coord.Lon, city.Coord.Lat)
 		count++
-		if count%TX_SIZE == 0 {
+		if count%txSize == 0 {
+			fmt.Printf("Committing %d recs..\n", count)
 			err = dbc.CommitTx()
 			if err != nil {
-				return committed, err
+				return handleTxError(err, dbc, committed)
 			}
-			count = 0
 			committed += count
+			count = 0
+
+			err = dbc.BeginTx()
+			if err != nil {
+				return handleTxError(err, dbc, committed)
+			}
 		}
 	}
 	if count > 0 {
 		err = dbc.CommitTx()
 		if err != nil {
-			return committed, err
+			return handleTxError(err, dbc, committed)
 		}
 		committed += count
 	}
 	return committed, nil
+}
+
+func handleTxError(err error, dbc *db.OwmDbClient, committed int64) (int64, error) {
+	fmt.Printf("Error occurred during transaction: %s\n", err.Error())
+	dbc.RollbackTx()
+	return committed, err
 }

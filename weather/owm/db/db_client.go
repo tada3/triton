@@ -28,7 +28,7 @@ func (c *OwmDbClient) Open() error {
 }
 
 func (c *OwmDbClient) PrepareStmt(stmt string) (*sql.Stmt, error) {
-	stmtIns, err := c.db.Prepare("INSERT INTO city_list VALUES(?,?,?,?,?)")
+	stmtIns, err := c.db.Prepare(stmt)
 	if err != nil {
 		return nil, err
 	}
