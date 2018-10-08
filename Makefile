@@ -1,5 +1,6 @@
 PACKAGE  = github.com/tada3/triton
 EXENAME  = triton
+ADMIN_TOOL = att
 DATE    ?= $(shell date +%FT%T%z)
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
@@ -31,6 +32,14 @@ build: ; $(info $(M) building executable to bin/ …) @ ## Build cic-server exec
 		-tags release \
 		-ldflags "-X $(PACKAGE).Version=$(VERSION) -X $(PACKAGE).BuildDate=$(DATE)" \
 		-o bin/$(EXENAME) cmd/main.go
+
+.PHONY: admin
+admin: ; $(info $(M) building admin to bin/ …) @ ## Build cic-server executable
+	$Q $(GO) build \
+		-i -v \
+		-tags release \
+		-ldflags "-X $(PACKAGE).Version=$(VERSION) -X $(PACKAGE).BuildDate=$(DATE)" \
+		-o bin/$(ADMIN_TOOL) cmd/admin.go
 
 
 # Tools
