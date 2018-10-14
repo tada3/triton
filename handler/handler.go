@@ -41,7 +41,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 	switch reqType {
 	case "LaunchRequest":
 		fmt.Println("LaunchRequest")
-		response = protocol.MakeCEKResponse(handleLaunchRequest())
+		response = handleLaunchRequest()
 	case "SessionEndedRequest":
 		fmt.Println("SessionEndedRequest")
 		response = protocol.MakeCEKResponse(handleEndRequest())
@@ -103,13 +103,14 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	intent := req.Request.Intent
 	slots := intent.Slots
 
-	target := protocol.GetStringSlot(slots, "city")
+	city := protocol.GetStringSlot(slots, "city")
 
-	if target == "同じ" {
-		return handleStartOver(req, userID)
-	} else {
-		return handleStartNew(req, userID)
-	}
+	fmt.Printf("city: %s\n", city)
+
+	msg := "Hello!"
+
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
 }
 
 func handleStartNew(req protocol.CEKRequest, userId string) protocol.CEKResponse {
@@ -287,14 +288,15 @@ func location2String222(loc game.Location) string {
 	return fmt.Sprintf("%dの%d", loc.X, loc.Y)
 }
 
-func handleLaunchRequest() protocol.CEKResponsePayload {
+func handleLaunchRequest() protocol.CEKResponse {
 	osVal1 := protocol.MakeOutputSpeechUrlValue(OPENING_SOUND_URL)
 	osVal2 := protocol.MakeOutputSpeechTextValue(game.GetMessage(game.WelcomeMsg))
 	os := protocol.MakeOutputSpeechList(osVal1, osVal2)
-	return protocol.CEKResponsePayload{
+	p := protocol.CEKResponsePayload{
 		OutputSpeech:     os,
 		ShouldEndSession: false,
 	}
+	return protocol.MakeCEKResponse(p)
 }
 
 func handleEndRequest() protocol.CEKResponsePayload {

@@ -10,6 +10,14 @@ func MakeCEKResponse(responsePayload CEKResponsePayload) CEKResponse {
 	return response
 }
 
+func MakeCEKResponsePayload(msg string, ses bool) CEKResponsePayload {
+	p := CEKResponsePayload{
+		OutputSpeech:     MakeSimpleOutputSpeech(msg),
+		ShouldEndSession: ses,
+	}
+	return p
+}
+
 func MakeCEKResponsePayload２(msg1 string, msg2 string, ses bool) CEKResponsePayload {
 	p := CEKResponsePayload{
 		OutputSpeech:     MakeSimpleOutputSpeech(msg1),
