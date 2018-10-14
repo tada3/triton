@@ -27,8 +27,27 @@ func (c *OwmDbClient) Open() error {
 	return nil
 }
 
+// ExecTx execute sql with tx.
+func (c *OwmDbClient) ExecTx(stmt string) (sql.Result, error) {
+	if c.tx == nil {
+		return nil, errors.New("tx does not exist")
+	}
+	return c.tx.Exec(stmt)
+}
+
 func (c *OwmDbClient) PrepareStmt(stmt string) (*sql.Stmt, error) {
 	stmtIns, err := c.db.Prepare(stmt)
+	if err != nil {
+		return nil, err
+	}
+	return stmtIns, nil
+}
+
+func (c *OwmDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
+	if c.tx == nil {
+		return nil, errors.New("tx does not exist")
+	}
+	stmtIns, err := c.tx.Prepare(stmt)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +72,7 @@ func (c *OwmDbClient) BeginTx() error {
 }
 
 func (c *OwmDbClient) CommitTx() error {
+	fmt.Println("Committing tx..")
 	if c.tx == nil {
 		return errors.New("Transaction is not found.")
 	}
@@ -60,6 +80,7 @@ func (c *OwmDbClient) CommitTx() error {
 }
 
 func (c *OwmDbClient) RollbackTx() {
+	fmt.Println("Rollbacking tx..")
 	if c.tx == nil {
 		fmt.Println("Transaction is not found.")
 		return

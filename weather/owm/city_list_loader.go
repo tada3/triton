@@ -1,6 +1,7 @@
 package owm
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,9 @@ import (
 )
 
 const (
-	txSize = 1000
+	insertSql = "INSERT INTO city_list VALUES(?,?,?,?,?)"
+	deleteSql = "DELETE FROM city_list"
+	txSize    = 1000
 )
 
 type City struct {
@@ -23,6 +26,20 @@ type City struct {
 type Coord struct {
 	Lon float64
 	Lat float64
+}
+
+func ClearCityList() (int64, error) {
+	dbc, err := db.NewOwmDbClient()
+	if err != nil {
+		return 0, err
+	}
+	err = dbc.Open()
+	if err != nil {
+		return 0, err
+	}
+	defer dbc.Close()
+
+	return deleteCityList(dbc)
 }
 
 func LoadCityList(filepath string) (int64, error) {
@@ -66,6 +83,34 @@ func LoadCityList(filepath string) (int64, error) {
 
 }
 
+func deleteCityList(dbc *db.OwmDbClient) (committed int64, err error) {
+	fmt.Println("XXXXX deleteCityList 000")
+	defer func() {
+		fmt.Println("XXXXXXXXXXXXXX defer()")
+		if r := recover(); r != nil {
+			fmt.Println("Recovered in insertCityList!", r)
+			dbc.RollbackTx()
+			err = errors.New("unexpected error")
+		}
+	}()
+
+	fmt.Println("XXXXX deleteCityList 100")
+
+	err = dbc.BeginTx()
+	if err != nil {
+		return handleTxError(err, dbc, committed)
+	}
+
+	r, err := dbc.ExecTx(deleteSql)
+	committed, _ = r.RowsAffected()
+
+	err = dbc.CommitTx()
+	if err != nil {
+		return handleTxError(err, dbc, committed)
+	}
+	return committed, nil
+}
+
 func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (committed int64, err error) {
 	fmt.Println("XXXXX insertCityList 000")
 	defer func() {
@@ -77,30 +122,21 @@ func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (committed int64
 		}
 	}()
 
-	stmt, err := dbc.PrepareStmt("INSERT INTO city_list VALUES(?,?,?,?,?)")
-	if err != nil {
-		return committed, err
-	}
-
 	fmt.Println("XXXXX insertCityList 100")
 
-	err = dbc.BeginTx()
+	stmt, err := startInsertTransaction(dbc)
+	if err != nil {
+		return handleTxError(err, dbc, committed)
+	}
 	count := int64(0)
 	// committed := int64(0)
 	for decoder.More() {
-		fmt.Printf("XXXXXXX FOR LOOP 000 count=%d\n", count)
-
-		if committed > 100 && count == 123 {
-			fmt.Println("XXXXXXX This is for tesing!!")
-			return handleTxError(errors.New("testdesu"), dbc, committed)
-		}
 		var city City
-
 		err := decoder.Decode(&city)
 		if err != nil {
 			return handleTxError(err, dbc, committed)
 		}
-		fmt.Printf("city: %v\n", city.Name)
+		// fmt.Printf("city: %v\n", city.Name)
 
 		stmt.Exec(city.Id, city.Name, city.Country, city.Coord.Lon, city.Coord.Lat)
 		count++
@@ -113,20 +149,35 @@ func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (committed int64
 			committed += count
 			count = 0
 
-			err = dbc.BeginTx()
+			stmt, err = startInsertTransaction(dbc)
 			if err != nil {
 				return handleTxError(err, dbc, committed)
 			}
 		}
 	}
 	if count > 0 {
+		//dbc.RollbackTx()
+
 		err = dbc.CommitTx()
 		if err != nil {
 			return handleTxError(err, dbc, committed)
 		}
+
 		committed += count
 	}
 	return committed, nil
+}
+
+func startInsertTransaction(dbc *db.OwmDbClient) (*sql.Stmt, error) {
+	err := dbc.BeginTx()
+	if err != nil {
+		return nil, err
+	}
+	stmt, err := dbc.PrepareStmtTx(insertSql)
+	if err != nil {
+		return nil, err
+	}
+	return stmt, nil
 }
 
 func handleTxError(err error, dbc *db.OwmDbClient, committed int64) (int64, error) {
