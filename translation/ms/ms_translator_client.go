@@ -3,6 +3,7 @@ package ms
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -21,12 +22,12 @@ type TranslationRequest struct {
 }
 
 type TranslationResponse struct {
-	translations []TextAndTo
+	Translations []TextAndTo `json:"translations"`
 }
 
 type TextAndTo struct {
-	text string
-	to   string
+	Text string `json:"text"`
+	To   string `json:"to"`
 }
 
 func NewMSTranslatorClient(baseURL, apiKey string, timeout int) (*MSTranslatorClient, error) {
@@ -53,7 +54,7 @@ func (c *MSTranslatorClient) Translate(w string) (string, error) {
 		return "", err
 	}
 
-	result, err := DecodeResponse2(res)
+	result, err := DecodeResponse(res)
 	if err != nil {
 		return "", err
 	}
@@ -108,11 +109,12 @@ func DecodeResponse(resp *http.Response) (string, error) {
 
 	fmt.Printf("XXX root=%+v\n", root)
 	if len(root) > 0 {
-		xxx := root[0].translations
-		yyy := xxx[0].text
-		return yyy, nil
+		t := root[0].Translations
+		if len(t) > 0 {
+			return t[0].Text, nil
+		}
 	}
-	return "", nil
+	return "", errors.New("invalid response")
 
 }
 
