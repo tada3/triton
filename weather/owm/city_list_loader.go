@@ -128,6 +128,8 @@ func insertCityList(decoder *json.Decoder, dbc *db.OwmDbClient) (committed int64
 	if err != nil {
 		return handleTxError(err, dbc, committed)
 	}
+	defer stmt.Close()
+
 	count := int64(0)
 	// committed := int64(0)
 	for decoder.More() {

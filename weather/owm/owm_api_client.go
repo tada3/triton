@@ -5,7 +5,12 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"time"
+)
+
+const (
+	CurrentWeatherPath string = "weather"
 )
 
 // OwmClient is a Client for OpenWeatherMap API
@@ -40,13 +45,13 @@ func NewOwmClient(baseURL, apiKey string, timeout int) (*OwmClient, error) {
 	}, nil
 }
 
-func (c *OwmClient) newGetRequest(spath, cityID string) (*http.Request, error) {
+func (c *OwmClient) NewGetRequest(spath string, cityID int64) (*http.Request, error) {
 	u := *c.baseURL
 	u.Path = path.Join(c.baseURL.Path, spath)
 
 	q := u.Query()
 	q.Set("appid", c.apiKey)
-	q.Set("id", cityID)
+	q.Set("id", strconv.FormatInt(cityID, 10))
 	u.RawQuery = q.Encode()
 
 	fmt.Printf("XXX url=%v\\n", u.String())
@@ -59,4 +64,24 @@ func (c *OwmClient) newGetRequest(spath, cityID string) (*http.Request, error) {
 	req.Header.Set("Content-Type", "application/json")
 
 	return req, nil
+}
+
+func (c *OwmClient) GetCurrentWeatherByID(id int64) (*CurrentWeather, error) {
+
+	req, err := c.NewGetRequest(CurrentWeatherPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	var cw CurrentWeather
+
+	if err := weather.DecodeBody(res, &cw); err != nil {
+		t.Fatal(err)
+	}
+
 }

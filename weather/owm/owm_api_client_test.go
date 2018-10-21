@@ -14,7 +14,7 @@ func Test_GetCurrentWeather(t *testing.T) {
 	}
 	spath := "weather"
 	cityID := "1848354"
-	req, err := client.newGetRequest(spath, cityID)
+	req, err := client.NewGetRequest(spath, cityID)
 	if err != nil {
 		t.Fatal(err)
 	}

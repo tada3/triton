@@ -6,6 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/tada3/triton/translation"
+	"github.com/tada3/triton/weather/owm"
+
 	"github.com/tada3/triton/game"
 	"github.com/tada3/triton/protocol"
 )
@@ -104,8 +107,30 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	slots := intent.Slots
 
 	city := protocol.GetStringSlot(slots, "city")
-
 	fmt.Printf("city: %s\n", city)
+
+	// 1. Translation
+	cityEn, err := translation.Translate(city)
+	if err != nil {
+		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+		return getErrorResponse(errMsg)
+	}
+
+	fmt.Printf("cityEn: %s\n", cityEn)
+
+	// 2. Get city id
+	cityID, found, err := owm.GetCityID(cityEn)
+	if err != nil {
+		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+		return getErrorResponse(errMsg)
+	}
+	if !found {
+		// use cityEn as it is
+	} else {
+		// use cityID
+		fmt.Printf("cityID: %d\n", cityID)
+
+	}
 
 	msg := "Hello!"
 
@@ -321,6 +346,14 @@ func handleInvalidRequest(req protocol.CEKRequest) protocol.CEKResponse {
 	p := protocol.CEKResponsePayload{
 		OutputSpeech:     protocol.MakeSimpleOutputSpeech(msg),
 		ShouldEndSession: false,
+	}
+	return protocol.MakeCEKResponse(p)
+}
+
+func getErrorResponse(msg string) protocol.CEKResponse {
+	p := protocol.CEKResponsePayload{
+		OutputSpeech:     protocol.MakeSimpleOutputSpeech(msg),
+		ShouldEndSession: true,
 	}
 	return protocol.MakeCEKResponse(p)
 }

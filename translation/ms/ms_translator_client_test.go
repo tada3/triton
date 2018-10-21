@@ -3,6 +3,8 @@ package ms
 import (
 	"fmt"
 	"testing"
+
+	"github.com/tada3/triton/translation"
 )
 
 const (
@@ -11,12 +13,13 @@ const (
 )
 
 func Test_Translate(t *testing.T) {
-	c, err := NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
+	var tr translation.Translator
+	tr, err := NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	result, err := c.Translate("ローマ")
+	result, err := tr.Translate("ローマ")
 	if err != nil {
 		t.Fatal(err)
 	}
