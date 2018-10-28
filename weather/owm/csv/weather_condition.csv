@@ -1,0 +1,35 @@
+
+
+＃ Group 3xx: Drizzle
+300, 300, 弱い霧雨, ight intensity drizzle
+301, 300, 霧雨, drizzle
+302, 300, 強い霧雨, heavy intensity drizzle
+310, 300, 弱い雨, light intensity drizzle rain
+311, 300, 雨, drizzle rain
+312, 300, 強い雨, heavy intensity drizzle rain
+313, 300, にわか雨, shower rain and drizzle
+314, 300, 強いにわか雨, heavy shower rain and drizzle
+321, 300, にわか霧雨, shower drizzle
+
+
+# Group 5xx: Rain
+500, 300, 小雨, light rain
+501, 300, 雨, moderate rain
+502, 300, 強い雨, heavy intensity rain
+503, 300, 非常に激しい雨, very heavy rain
+504, 300, 猛烈な雨, extreme rain
+511, 300, 雨氷, freezing rain
+520, 300, 弱いにわか雨, light intensity shower rain
+521, 300, にわか雨, shower rain
+522, 300, 強いにわか雨, heavy intensity shower rain
+531, 300, 時々にわか雨, ragged shower rain
+
+
+# Group 800: Clear
+800, 100, 快晴, clear sky
+
+# Group 80x: Clouds
+801, 100, 晴れ, few clouds
+802, 100, 薄曇り, scattered clouds
+803, 200, 曇り, broken clouds
+804, 200, 曇り, overcast clouds
