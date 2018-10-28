@@ -6,8 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/tada3/triton/weather"
+
 	"github.com/tada3/triton/translation"
-	"github.com/tada3/triton/weather/owm"
 
 	"github.com/tada3/triton/game"
 	"github.com/tada3/triton/protocol"
@@ -118,21 +119,15 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	fmt.Printf("cityEn: %s\n", cityEn)
 
-	// 2. Get city id
-	cityID, found, err := owm.GetCityID(cityEn)
+	// 2. Get weather
+	weather, err := weather.GetCurrentWeather(cityEn)
 	if err != nil {
+		fmt.Println("Error!", err.Error())
 		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
 		return getErrorResponse(errMsg)
 	}
-	if !found {
-		// use cityEn as it is
-	} else {
-		// use cityID
-		fmt.Printf("cityID: %d\n", cityID)
 
-	}
-
-	msg := "Hello!"
+	msg := game.GetMessage(game.CurrentWeather, city, weather.Weather, weather.Temp)
 
 	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)

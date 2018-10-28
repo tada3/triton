@@ -24,7 +24,7 @@ func Test_GetCurrentWeather(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var cw CurrentWeather
+	var cw OwmCurrentWeather
 
 	if err := weather.DecodeBody(res, &cw); err != nil {
 		t.Fatal(err)

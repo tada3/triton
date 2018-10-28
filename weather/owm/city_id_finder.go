@@ -19,6 +19,10 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+	err = dbc.Open()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func GetCityID(city string) (int64, bool, error) {

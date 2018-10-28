@@ -31,6 +31,8 @@ const (
 	RepromptMsg2
 	RepromptMsg3
 	RepromptMsg4
+
+	CurrentWeather
 )
 
 var (
@@ -77,6 +79,9 @@ func init() {
 	messageMap2[RepromptMsg2] = []string{"どちらへ行きますか？", "次はどちらへ行きますか？", "次はどうしますか？", "どちらへ行きましょう？", "さあ、次は？", "では、次はどちらへ？"}
 	messageMap[RepromptMsg3] = "新しい迷路で遊ぶのなら、新しい迷路{[500]}、もう一度同じ迷路で遊ぶ場合は、同じ迷路{[400]}、と言って下さい。"
 	messageMap[RepromptMsg4] = "どうしますか？"
+
+	messageMap[CurrentWeather] = "現在の%sの天気は%s、気温は%d度です。"
+
 }
 
 // Assume messageMap[t] always exists
