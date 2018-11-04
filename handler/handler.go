@@ -113,6 +113,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	// 1. Translation
 	cityEn, err := translation.Translate(city)
 	if err != nil {
+		fmt.Println("ERROR!", err)
 		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
 		return getErrorResponse(errMsg)
 	}
@@ -127,8 +128,13 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		return getErrorResponse(errMsg)
 	}
 
-	msg := game.GetMessage(game.CurrentWeather, city, weather.Weather, weather.Temp)
-
+	var msg string
+	if weather == nil {
+		fmt.Printf("%s (%s) is not found.", city, cityEn)
+		msg = game.GetMessage2(game.WeatherNotFound, city)
+	} else {
+		msg = game.GetMessage(game.CurrentWeather, city, weather.Weather, weather.Temp)
+	}
 	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }

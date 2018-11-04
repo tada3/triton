@@ -28,6 +28,9 @@ type OwmCurrentWeather struct {
 	Name    string
 	Weather []OwmWeather
 	Main    OwmMain
+	// Usually integer but string in case of 404
+	Cod     json.Number
+	Message string
 }
 
 type OwmWeather struct {
@@ -106,7 +109,7 @@ func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, erro
 
 	fmt.Printf("XXX ocw=%+v\n", ocw)
 
-	return normalize(ocw), nil
+	return normalize(ocw)
 }
 
 func (c *OwmClient) GetCurrentWeatherByName(name string) (*model.CurrentWeather, error) {
@@ -127,7 +130,9 @@ func (c *OwmClient) GetCurrentWeatherByName(name string) (*model.CurrentWeather,
 		return nil, err
 	}
 
-	return normalize(ocw), nil
+	fmt.Printf("YYY ocw=%+v\n", ocw)
+
+	return normalize(ocw)
 }
 
 func decodeBody2(resp *http.Response, out interface{}) error {
@@ -136,15 +141,20 @@ func decodeBody2(resp *http.Response, out interface{}) error {
 	return decoder.Decode(out)
 }
 
-func normalize(ocw *OwmCurrentWeather) *model.CurrentWeather {
-	weather := getWeatherDescription(ocw.Weather[0].Id)
-	temp := marume(ocw.Main.Temp)
-	return &model.CurrentWeather{weather, temp}
-	// return &CurrentWeatherSummary{ocw.Weather[0].Id, ocw.Main.Temp}
-}
-
-func getWeatherDescription(code int64) string {
-	return "hoge"
+func normalize(ocw *OwmCurrentWeather) (*model.CurrentWeather, error) {
+	var weather string
+	var temp int64
+	cod := ocw.Cod.String()
+	if cod != "200" || len(ocw.Weather) == 0 {
+		fmt.Println("LOG Errorneous response: %+v\n", ocw)
+		if cod == "404" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Received error response from OWM: %s, %s", cod, ocw.Message)
+	}
+	weather = GetWeatherCondition(ocw.Weather[0].Id)
+	temp = marume(ocw.Main.Temp)
+	return &model.CurrentWeather{weather, temp}, nil
 }
 
 func marume(t float64) int64 {
