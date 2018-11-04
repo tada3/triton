@@ -33,6 +33,7 @@ const (
 	RepromptMsg4
 
 	CurrentWeather
+	NoCitySlot
 	WeatherNotFound
 )
 
@@ -84,6 +85,9 @@ func init() {
 	messageMap[CurrentWeather] = "現在の%sの天気は%s、気温は%d度です。"
 
 	messageMap2[WeatherNotFound] = []string{"ごめんなさい、%sの天気はわかりません。", "すいません、%sの天気は知らないんです。", "え、%sですか。申し訳ありませんがそれは無理です。", "%sはちょっと。ごめんなさい。"}
+
+	messageMap2[NoCitySlot] = []string{"ごめんなさい、よく聞き取れませんでした。もう一度言っていただけますか？", "残念ながらお答えできません。", "申し訳ありません。わかりませんでした。"}
+
 }
 
 // Assume messageMap[t] always exists

@@ -105,36 +105,44 @@ func getUserId(req protocol.CEKRequest) string {
 }
 
 func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	var msg string
+	var p protocol.CEKResponsePayload
+
 	// 0. Get City
 	city := getCityFromSlots(req)
+	if city == "" {
+		fmt.Printf("LOG No slots were passwd: %+v", req.Request.Intent)
+		msg = game.GetMessage2(game.NoCitySlot)
+		p = protocol.MakeCEKResponsePayload(msg, false)
+		return protocol.MakeCEKResponse(p)
+	}
+
 	fmt.Printf("city: %s\n", city)
 
 	// 1. Translation
 	cityEn, err := translation.Translate(city)
 	if err != nil {
 		fmt.Println("ERROR!", err)
-		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
-		return getErrorResponse(errMsg)
+		msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+		return getErrorResponse(msg)
 	}
-
 	fmt.Printf("cityEn: %s\n", cityEn)
 
 	// 2. Get weather
 	weather, err := weather.GetCurrentWeather(cityEn)
 	if err != nil {
 		fmt.Println("Error!", err.Error())
-		errMsg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
-		return getErrorResponse(errMsg)
+		msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+		return getErrorResponse(msg)
 	}
 
-	var msg string
 	if weather == nil {
 		fmt.Printf("%s (%s) is not found.", city, cityEn)
 		msg = game.GetMessage2(game.WeatherNotFound, city)
 	} else {
 		msg = game.GetMessage(game.CurrentWeather, city, weather.Weather, weather.Temp)
 	}
-	p := protocol.MakeCEKResponsePayload(msg, false)
+	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
 
