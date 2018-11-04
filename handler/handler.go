@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/tada3/triton/weather"
 
@@ -104,10 +105,8 @@ func getUserId(req protocol.CEKRequest) string {
 }
 
 func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKResponse {
-	intent := req.Request.Intent
-	slots := intent.Slots
-
-	city := protocol.GetStringSlot(slots, "city")
+	// 0. Get City
+	city := getCityFromSlots(req)
 	fmt.Printf("city: %s\n", city)
 
 	// 1. Translation
@@ -137,6 +136,31 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	}
 	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
+}
+
+func getCityFromSlots(req protocol.CEKRequest) string {
+	intent := req.Request.Intent
+	slots := intent.Slots
+
+	city := protocol.GetStringSlot(slots, "city")
+	if city != "" {
+		return city
+	}
+
+	city = protocol.GetStringSlot(slots, "city_snt")
+	if city != "" {
+		return city
+	}
+
+	city = protocol.GetStringSlot(slots, "city_jp")
+	if city != "" {
+		if strings.HasSuffix(city, "市") {
+			city = strings.TrimRight(city, "市")
+		}
+		return city
+	}
+
+	return ""
 }
 
 func handleStartNew(req protocol.CEKRequest, userId string) protocol.CEKResponse {
