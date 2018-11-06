@@ -43,6 +43,7 @@ func newRedisClient(addr string) (*redis.Client, error) {
 	}
 	return redis.NewClient(&redis.Options{
 		Addr:     addr,
+		Password: "zenzaiD0ji",
 		PoolSize: 30,
 	}), nil
 }
