@@ -36,9 +36,10 @@ func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	var cw *model.CurrentWeather
 	cw, ok := checkCache(cityName)
 	if ok {
-		fmt.Printf("LOG Cache Hit %s\n", cityName)
+		fmt.Printf("LOG Cache2 Hit %s\n", cityName)
 		return cw, nil
 	}
+	fmt.Printf("LOG Cache2 Miss %s\n", cityName)
 
 	cityID, found, err := owm.GetCityID(cityName)
 	if err != nil {
