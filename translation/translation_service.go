@@ -49,7 +49,7 @@ func checkCache(w string) (string, bool) {
 }
 
 func setCache(w, tw string) {
-	redis.Set(w, tw, cacheTimeout)
+	redis.Set(getRedisKey(w), tw, cacheTimeout)
 }
 
 func getRedisKey(w string) string {
