@@ -21,6 +21,9 @@ type Config struct {
 	MySQLDatabase string `default:"triton"`
 	MySQLUser     string `default:"triton"`
 	MySQLPasswd   string `default:triton`
+
+	RedisHost string `default:"localhost"`
+	RedisPort int    `default:6379`
 }
 
 func init() {

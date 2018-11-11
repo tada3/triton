@@ -6,13 +6,20 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	"github.com/tada3/triton/config"
+)
+
+const (
+	dataSourceNameFmt = "%s:%d"
 )
 
 var client *redis.Client
 
 func init() {
 	var err error
-	client, err = newRedisClient("10.127.34.81:7000")
+	dsn := getDataSourceName()
+	fmt.Printf("INFO Connecting to Redis(%s)..", dsn)
+	client, err = newRedisClient(dsn)
 	if err != nil {
 		panic(err)
 	}
@@ -46,4 +53,11 @@ func newRedisClient(addr string) (*redis.Client, error) {
 		Password: "zenzaiD0ji",
 		PoolSize: 30,
 	}), nil
+}
+
+func getDataSourceName() string {
+	cfg := config.GetConfig()
+	// Assume cfg is never nil
+	return fmt.Sprintf(dataSourceNameFmt,
+		cfg.RedisHost, cfg.RedisPort)
 }
