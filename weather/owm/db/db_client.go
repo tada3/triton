@@ -26,7 +26,6 @@ func (c *OwmDbClient) Open() error {
 	var err error
 	dsn := getDataSourceName()
 	fmt.Printf("INFO Connecting to MySQL(%s)..\n", dsn)
-	//c.db, err = sql.Open("mysql", "triton:tori1010@tcp(clv-triton001-dbs4dev-jp2v-dev:20306)/triton")
 	c.db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return err
