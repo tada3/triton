@@ -6,6 +6,11 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/tada3/triton/config"
+)
+
+const (
+	dataSourceNameFmt string = "%s:%s@tcp(%s:%d)/%s"
 )
 
 type OwmDbClient struct {
@@ -18,9 +23,11 @@ func NewOwmDbClient() (*OwmDbClient, error) {
 }
 
 func (c *OwmDbClient) Open() error {
-	fmt.Printf("XXX Connecting to DB...\n")
 	var err error
-	c.db, err = sql.Open("mysql", "triton:tori1010@tcp(clv-triton001-dbs4dev-jp2v-dev:20306)/triton")
+	dsn := getDataSourceName()
+	fmt.Printf("INFO Connecting to MySQL(%s)..\n", dsn)
+	//c.db, err = sql.Open("mysql", "triton:tori1010@tcp(clv-triton001-dbs4dev-jp2v-dev:20306)/triton")
+	c.db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return err
 	}
@@ -89,4 +96,12 @@ func (c *OwmDbClient) RollbackTx() {
 	if err != nil {
 		fmt.Printf("Rollback failed: %s\n", err.Error())
 	}
+}
+
+func getDataSourceName() string {
+	cfg := config.GetConfig()
+	// Assume cfg is never nil
+	return fmt.Sprintf(dataSourceNameFmt,
+		cfg.MySQLUser, cfg.MySQLPasswd,
+		cfg.MySQLHost, cfg.MySQLPort, cfg.MySQLDatabase)
 }

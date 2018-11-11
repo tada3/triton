@@ -39,7 +39,7 @@ admin: ; $(info $(M) building admin to bin/ …) @ ## Build cic-server executabl
 		-i -v \
 		-tags release \
 		-ldflags "-X $(PACKAGE).Version=$(VERSION) -X $(PACKAGE).BuildDate=$(DATE)" \
-		-o bin/$(ADMIN_TOOL) cmd/admin.go
+		-o bin/$(ADMIN_TOOL) cmd/admin/admin.go
 
 
 # Tools

@@ -14,6 +14,7 @@ const (
 
 func main() {
 	log.Println("You won't get lost if you take the road to the left and bear to the left at every crossroad...")
+
 	log.Printf("Listen on port %d\n", port)
 
 	fileServer := http.FileServer(http.Dir("resources"))
