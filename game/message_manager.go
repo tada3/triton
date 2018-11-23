@@ -33,7 +33,7 @@ const (
 	RepromptMsg4
 
 	CurrentWeather
-	NoCitySlot
+	NoCity
 	WeatherNotFound
 )
 
@@ -86,7 +86,7 @@ func init() {
 
 	messageMap2[WeatherNotFound] = []string{"ごめんなさい、%sの天気はわかりません。", "すいません、%sの天気は知らないんです。", "え、%sですか。申し訳ありませんがそれは無理です。", "%sはちょっと。ごめんなさい。"}
 
-	messageMap2[NoCitySlot] = []string{"ごめんなさい、よく聞き取れませんでした。もう一度言っていただけますか？", "残念ながらお答えできません。", "申し訳ありません。わかりませんでした。"}
+	messageMap2[NoCity] = []string{"ごめんなさい、よく聞き取れませんでした。もう一度言っていただけますか？", "残念ながらお答えできません。", "申し訳ありません。わかりませんでした。"}
 
 }
 

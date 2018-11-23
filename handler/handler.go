@@ -13,6 +13,8 @@ import (
 
 	"github.com/tada3/triton/game"
 	"github.com/tada3/triton/protocol"
+
+	"github.com/tada3/triton/tritondb"
 )
 
 const (
@@ -109,12 +111,15 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	var p protocol.CEKResponsePayload
 
 	// 0. Get City
-	city := getCityFromSlots(req)
+	city := getCityFromCountrySlot(req)
 	if city == "" {
-		fmt.Printf("LOG No slots were passwd: %+v", req.Request.Intent)
-		msg = game.GetMessage2(game.NoCitySlot)
-		p = protocol.MakeCEKResponsePayload(msg, false)
-		return protocol.MakeCEKResponse(p)
+		city = getCityFromCitySlot(req)
+		if city == "" {
+			fmt.Printf("LOG No slots were passed: %+v", req.Request.Intent)
+			msg = game.GetMessage2(game.NoCity)
+			p = protocol.MakeCEKResponsePayload(msg, false)
+			return protocol.MakeCEKResponse(p)
+		}
 	}
 
 	fmt.Printf("city: %s\n", city)
@@ -146,7 +151,44 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	return protocol.MakeCEKResponse(p)
 }
 
-func getCityFromSlots(req protocol.CEKRequest) string {
+func getCityFromCountrySlot(req protocol.CEKRequest) string {
+	intent := req.Request.Intent
+	slots := intent.Slots
+	country := protocol.GetStringSlot(slots, "country")
+
+	if country != "" {
+		fmt.Printf("DEBUG: country: %s\n", country)
+		city, found, err := tritondb.CountryCode2City(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return ""
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return ""
+		}
+		return city
+	}
+
+	country = protocol.GetStringSlot(slots, "country_snt")
+	if country != "" {
+		fmt.Printf("DEBUG: country_snt: %s\n", country)
+		city, found, err := tritondb.CountryName2City(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return ""
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return ""
+		}
+		return city
+	}
+
+	return ""
+}
+
+func getCityFromCitySlot(req protocol.CEKRequest) string {
 	intent := req.Request.Intent
 	slots := intent.Slots
 

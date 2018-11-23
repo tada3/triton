@@ -47,6 +47,12 @@
   revision = "69c27309b2d751c576b59ea9c3726597c2375da3"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/exp"
+  packages = ["utf8string"]
+  revision = "a3060d491354240eda536d676ced8bb702018b7e"
+
+[[projects]]
   name = "google.golang.org/appengine"
   packages = ["cloudsql"]
   revision = "ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06"
@@ -61,6 +67,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "834f8d7acd823db08ae57225465b892a20fc446fd50882ecc700e2c77e44e8c2"
+  inputs-digest = "8721e273eee3c4705177f1b8cae97dc09db9bbbbbbc40711ec281574b39ae52f"
   solver-name = "gps-cdcl"
   solver-version = 1

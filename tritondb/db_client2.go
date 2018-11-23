@@ -1,4 +1,4 @@
-package db
+package tritondb
 
 import (
 	"database/sql"
@@ -14,17 +14,17 @@ const (
 )
 
 var (
-	defaultDbc *OwmDbClient
+	defaultDbc *TritonDbClient
 )
 
-type OwmDbClient struct {
+type TritonDbClient struct {
 	db *sql.DB
 	tx *sql.Tx
 }
 
 func init() {
 	var err error
-	defaultDbc, err = NewOwmDbClient()
+	defaultDbc, err = newTritonDbClient()
 	if err != nil {
 		panic(err)
 	}
@@ -34,15 +34,11 @@ func init() {
 	}
 }
 
-func GetDbClient() *OwmDbClient {
+func getDbClient() *TritonDbClient {
 	return defaultDbc
 }
 
-func NewOwmDbClient() (*OwmDbClient, error) {
-	return &OwmDbClient{}, nil
-}
-
-func (c *OwmDbClient) Open() error {
+func (c *TritonDbClient) Open() error {
 	var err error
 	dsn := getDataSourceName()
 	fmt.Printf("INFO Connecting to MySQL(%s)..\n", dsn)
@@ -54,14 +50,14 @@ func (c *OwmDbClient) Open() error {
 }
 
 // ExecTx execute sql with tx.
-func (c *OwmDbClient) ExecTx(stmt string) (sql.Result, error) {
+func (c *TritonDbClient) ExecTx(stmt string) (sql.Result, error) {
 	if c.tx == nil {
 		return nil, errors.New("tx does not exist")
 	}
 	return c.tx.Exec(stmt)
 }
 
-func (c *OwmDbClient) PrepareStmt(stmt string) (*sql.Stmt, error) {
+func (c *TritonDbClient) PrepareStmt(stmt string) (*sql.Stmt, error) {
 	stmtIns, err := c.db.Prepare(stmt)
 	if err != nil {
 		return nil, err
@@ -69,7 +65,7 @@ func (c *OwmDbClient) PrepareStmt(stmt string) (*sql.Stmt, error) {
 	return stmtIns, nil
 }
 
-func (c *OwmDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
+func (c *TritonDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
 	if c.tx == nil {
 		return nil, errors.New("tx does not exist")
 	}
@@ -80,7 +76,7 @@ func (c *OwmDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
 	return stmtIns, nil
 }
 
-func (c *OwmDbClient) Close() {
+func (c *TritonDbClient) Close() {
 	fmt.Printf("XXX Closing connection to DB...\n")
 	err := c.db.Close()
 	if err != nil {
@@ -88,7 +84,7 @@ func (c *OwmDbClient) Close() {
 	}
 }
 
-func (c *OwmDbClient) BeginTx() error {
+func (c *TritonDbClient) BeginTx() error {
 	tx, err := c.db.Begin()
 	if err != nil {
 		return err
@@ -97,7 +93,7 @@ func (c *OwmDbClient) BeginTx() error {
 	return nil
 }
 
-func (c *OwmDbClient) CommitTx() error {
+func (c *TritonDbClient) CommitTx() error {
 	fmt.Println("Committing tx..")
 	if c.tx == nil {
 		return errors.New("Transaction is not found.")
@@ -105,7 +101,7 @@ func (c *OwmDbClient) CommitTx() error {
 	return c.tx.Commit()
 }
 
-func (c *OwmDbClient) RollbackTx() {
+func (c *TritonDbClient) RollbackTx() {
 	fmt.Println("Rollbacking tx..")
 	if c.tx == nil {
 		fmt.Println("Transaction is not found.")
@@ -115,6 +111,10 @@ func (c *OwmDbClient) RollbackTx() {
 	if err != nil {
 		fmt.Printf("Rollback failed: %s\n", err.Error())
 	}
+}
+
+func newTritonDbClient() (*TritonDbClient, error) {
+	return &TritonDbClient{}, nil
 }
 
 func getDataSourceName() string {
