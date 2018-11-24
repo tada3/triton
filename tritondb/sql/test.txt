@@ -1,0 +1,41 @@
+mysql> select * from country_city where cityName like '%市';
++--------------------+-----------------------------+-------------+-----------------+
+| countryName        | officialName                | countryCode | cityName        |
++--------------------+-----------------------------+-------------+-----------------+
+| チベット           | チベット自治区              | NULL        | ラサ市          |
+| 上海               | 上海                        | NULL        | 上海市          |
+| 中国               | 中華人民共和国              | CN          | 北京市          |
+| 内モンゴル         | 内モンゴル自治区            | NULL        | フフホト市      |
+| 北京               | 北京市                      | NULL        | 北京市          |
+| 吉林               | 吉林省                      | NULL        | 長春市          |
+| 四川               | 四川省                      | NULL        | 成都市          |
+| 天津               | 天津市                      | NULL        | 天津市          |
+| 安徽               | 安徽省                      | NULL        | 合肥市          |
+| 寧夏回族           | 寧夏回族自治区              | NULL        | 銀川市          |
+| 山東               | 山東省                      | NULL        | 済南市          |
+| 山西               | 山西省                      | NULL        | 太原市          |
+| 広東               | 広東省                      | NULL        | 広州市          |
+| 広西チワン族       | 広西チワン族自治区          | NULL        | 南寧市          |
+| 新疆ウイグル       | 新疆ウイグル自治区          | NULL        | ウルムチ市      |
+| 江蘇               | 江蘇省                      | NULL        | 南京市          |
+| 江西               | 江西省                      | NULL        | 南昌市          |
+| 河北               | 河北省                      | NULL        | 石家荘市        |
+| 河南               | 河南省                      | NULL        | 鄭州市          |
+| 浙江               | 浙江省                      | NULL        | 杭州市          |
+| 海南               | 海南省                      | NULL        | 海口市          |
+| 湖北               | 湖北省                      | NULL        | 武漢市          |
+| 湖南               | 湖南省                      | NULL        | 長沙市          |
+| 甘粛               | 甘粛省                      | NULL        | 蘭州市          |
+| 福建               | 福建省                      | NULL        | 福州市          |
+| 貴州               | 貴州省                      | NULL        | 貴陽市          |
+| 遼寧               | 遼寧省                      | NULL        | 瀋陽市          |
+| 重慶               | 重慶市                      | NULL        | 重慶市          |
+| 陝西               | 陝西省                      | NULL        | 西安市          |
+| 雲南               | 雲南省                      | NULL        | 昆明市          |
+| 青海               | 青海省                      | NULL        | 西寧市          |
+| 黒竜江             | 黒竜江省                    | NULL        | ハルビン市      |
++--------------------+-----------------------------+-------------+-----------------+
+
+SELECT left(cityName,char_length(cityName)-1) FROM country_city WHERE cityName like '%市';
+
+UPDATE country_city SET cityName = left(cityName,char_length(cityName)-1) WHERE cityName like '%市';

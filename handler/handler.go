@@ -64,8 +64,6 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 			response = handleMove(req, userId)
 		} else if intentName == "Location" {
 			response = handleLocation(req, userId)
-		} else if intentName == "GiveUp" {
-			response = handleGiveUp(req, userId)
 		} else {
 			response = handleUnknownRequest(req)
 		}
@@ -157,7 +155,6 @@ func getCityFromCountrySlot(req protocol.CEKRequest) string {
 	country := protocol.GetStringSlot(slots, "country")
 
 	if country != "" {
-		fmt.Printf("DEBUG: country: %s\n", country)
 		city, found, err := tritondb.CountryCode2City(country)
 		if err != nil {
 			fmt.Println("ERROR!", err.Error())
@@ -172,7 +169,6 @@ func getCityFromCountrySlot(req protocol.CEKRequest) string {
 
 	country = protocol.GetStringSlot(slots, "country_snt")
 	if country != "" {
-		fmt.Printf("DEBUG: country_snt: %s\n", country)
 		city, found, err := tritondb.CountryName2City(country)
 		if err != nil {
 			fmt.Println("ERROR!", err.Error())
@@ -362,23 +358,6 @@ func handleLocation(req protocol.CEKRequest, userID string) protocol.CEKResponse
 
 	msg1 := game.GetMessage(game.LocationMsg, loc)
 	msg2 := game.GetMessage(game.RepromptMsg2)
-
-	p := protocol.MakeCEKResponsePayload２(msg1, msg2, false)
-	return protocol.MakeCEKResponse(p)
-}
-
-func handleGiveUp(req protocol.CEKRequest, userID string) protocol.CEKResponse {
-	gm := masterRepo.GetGameMaster(userID)
-	if gm == nil {
-		return handleInvalidRequest(req)
-	}
-
-	if gm.State() != game.STARTED && gm.State() != game.SEARCHING {
-		return handleUnknownRequest(req)
-	}
-
-	msg1 := game.GetMessage(game.GiveUpMsg) + game.GetMessage(game.RepromptMsg1)
-	msg2 := game.GetMessage(game.RepromptMsg4)
 
 	p := protocol.MakeCEKResponsePayload２(msg1, msg2, false)
 	return protocol.MakeCEKResponse(p)

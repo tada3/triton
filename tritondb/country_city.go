@@ -10,27 +10,28 @@ const (
 )
 
 var (
-	stmt *sql.Stmt
+	stmtByName *sql.Stmt
+	stmtByCode *sql.Stmt
 )
 
 func CountryName2City(cn string) (string, bool, error) {
-	if stmt == nil {
+	if stmtByName == nil {
 		var pErr error
-		stmt, pErr = getDbClient().PrepareStmt(selectByNameSql)
+		stmtByName, pErr = getDbClient().PrepareStmt(selectByNameSql)
 		if pErr != nil {
 			return "", false, pErr
 		}
 	}
 
 	var city string
-	err := stmt.QueryRow(cn).Scan(&city)
+	err := stmtByName.QueryRow(cn, cn).Scan(&city)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Not Found
 			return "", false, nil
 		}
-		stmt.Close()
-		stmt = nil
+		stmtByName.Close()
+		stmtByName = nil
 		return "", false, err
 	}
 
@@ -38,23 +39,23 @@ func CountryName2City(cn string) (string, bool, error) {
 }
 
 func CountryCode2City(code string) (string, bool, error) {
-	if stmt == nil {
+	if stmtByCode == nil {
 		var pErr error
-		stmt, pErr = getDbClient().PrepareStmt(selectByCodeSql)
+		stmtByCode, pErr = getDbClient().PrepareStmt(selectByCodeSql)
 		if pErr != nil {
 			return "", false, pErr
 		}
 	}
 
 	var city string
-	err := stmt.QueryRow(code).Scan(&city)
+	err := stmtByCode.QueryRow(code).Scan(&city)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Not Found
 			return "", false, nil
 		}
-		stmt.Close()
-		stmt = nil
+		stmtByCode.Close()
+		stmtByCode = nil
 		return "", false, err
 	}
 
