@@ -14,4 +14,6 @@ sourcetreeconfig
 config.yaml
 /tester
 log/
+mysql.sh
+
 
