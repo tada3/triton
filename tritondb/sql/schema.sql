@@ -45,6 +45,12 @@ UPDATE country_city SET countryCode = 'MV' WHERE countryName = 'モルディブ'
 UPDATE country_city SET countryCode = 'RS' WHERE countryName = 'セルビア';
 UPDATE country_city SET countryCode = 'SC' WHERE countryName = 'セーシェル';
 
+INSERT INTO country_city VALUES ('グアム','グアム','GU','ハガニア')
+INSERT INTO country_city VALUES ('ボルネオ島','ボルネオ島',NULL,'クチン')
+INSERT INTO country_city VALUES ('セントーサ島','セントーサ島',NULL,'シンガポール');
+INSERT INTO country_city VALUES ('北海道','北海道',NULL,'札幌');
+INSERT INTO country_city VALUES ('アフリカ','アフリカ',NULL,'ナイロビ');
+INSERT INTO country_city VALUES ('ワイキキ','ワイキキ',NULL,'ホノルル');
 
 
 
