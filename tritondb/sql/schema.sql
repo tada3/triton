@@ -49,11 +49,16 @@ INSERT INTO country_city VALUES ('グアム','グアム','GU','ハガニア')
 INSERT INTO country_city VALUES ('ボルネオ島','ボルネオ島',NULL,'クチン')
 INSERT INTO country_city VALUES ('セントーサ島','セントーサ島',NULL,'シンガポール');
 INSERT INTO country_city VALUES ('北海道','北海道',NULL,'札幌');
+
 INSERT INTO country_city VALUES ('アフリカ','アフリカ',NULL,'ナイロビ');
 INSERT INTO country_city VALUES ('ワイキキ','ワイキキ',NULL,'ホノルル');
 
 
-
+INSERT INTO country_city VALUES ('岩手県','岩手',NULL,'盛岡');
+INSERT INTO country_city VALUES ('福島県','福島',NULL,'福島');
+INSERT INTO country_city VALUES ('埼玉県','埼玉',NULL,'さいたま');
+INSERT INTO country_city VALUES ('神奈川県','神奈川',NULL,'横浜');
+INSERT INTO country_city VALUES ('沖縄県','沖縄',NULL,'那覇');
 
 
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;

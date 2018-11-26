@@ -153,7 +153,6 @@ func getCityFromCountrySlot(req protocol.CEKRequest) string {
 	intent := req.Request.Intent
 	slots := intent.Slots
 	country := protocol.GetStringSlot(slots, "country")
-
 	if country != "" {
 		city, found, err := tritondb.CountryCode2City(country)
 		if err != nil {
@@ -168,6 +167,20 @@ func getCityFromCountrySlot(req protocol.CEKRequest) string {
 	}
 
 	country = protocol.GetStringSlot(slots, "country_snt")
+	if country != "" {
+		city, found, err := tritondb.CountryName2City(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return ""
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return ""
+		}
+		return city
+	}
+
+	country = protocol.GetStringSlot(slots, "ken_jp")
 	if country != "" {
 		city, found, err := tritondb.CountryName2City(country)
 		if err != nil {
