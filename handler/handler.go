@@ -60,10 +60,12 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 			response = handleCurrentWeather(req, userId)
 		} else if intentName == "Tomete" {
 			response = handleTomete(req, userId)
+		} else if intentName == "Arigato" {
+			response = handleArigato(req, userId)
+		} else if intentName == "Sugoine" {
+			response = handleSugoine(req, userId)
 		} else if intentName == "Retry" {
 			response = handleStartOver(req, userId)
-		} else if intentName == "Move" {
-			response = handleMove(req, userId)
 		} else if intentName == "Location" {
 			response = handleLocation(req, userId)
 		} else {
@@ -154,6 +156,18 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 func handleTomete(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 	msg := game.GetMessage2(game.Tomete)
 	p := protocol.MakeCEKResponsePayload(msg, true)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleArigato(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.Arigato)
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleSugoine(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.Sugoine)
+	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
 
@@ -298,71 +312,6 @@ func handleStartOver(req protocol.CEKRequest, userId string) protocol.CEKRespons
 
 	p := protocol.MakeCEKResponsePayload２(msg1, msg2, false)
 	return protocol.MakeCEKResponse(p)
-}
-
-func handleMove(req protocol.CEKRequest, userId string) protocol.CEKResponse {
-	gm := masterRepo.GetGameMaster(userId)
-	if gm == nil {
-		return handleInvalidRequest(req)
-	}
-
-	slots := req.Request.Intent.Slots
-	direction := protocol.GetStringSlot(slots, "direction")
-
-	var d game.Direction
-	if direction == "上" {
-		d = game.NORTH
-	} else if direction == "下" {
-		d = game.SOUTH
-	} else if direction == "右" {
-		d = game.EAST
-	} else if direction == "左" {
-		d = game.WEST
-	}
-	result, err := gm.Move(d)
-
-	if err != nil {
-		fmt.Println("ERROR! Failed to move.", err)
-		return handleInvalidRequest(req)
-	}
-
-	var payload protocol.CEKResponsePayload
-	if result {
-		if gm.State() == game.GOALED {
-			msg1 := game.GetMessage(game.GOAL_MSG, gm.MoveCount(), gm.LocateCount())
-			msg2 := game.GetMessage(game.RepromptMsg3)
-
-			os := protocol.MakeSimpleOutputSpeech(msg1)
-			rep := protocol.MakeReprompt(protocol.MakeSimpleOutputSpeech(msg2))
-			payload = protocol.MakeCEKResponsePayload3(os, rep, false)
-
-		} else {
-			msg1 := game.GetMessage2(game.MoveMsg, direction) + game.GetMessage2(game.RepromptMsg2)
-			msg2 := game.GetMessage2(game.RepromptMsg2)
-			os := protocol.MakeSimpleOutputSpeech(msg1)
-			rep := protocol.MakeReprompt(protocol.MakeSimpleOutputSpeech(msg2))
-			payload = protocol.MakeCEKResponsePayload3(os, rep, false)
-		}
-	} else {
-		if gm.State() == game.DEAD {
-			osVal1 := protocol.MakeOutputSpeechUrlValue(BUTSUKARU_SOUND_URL)
-			osVal2 := protocol.MakeOutputSpeechUrlValue(DEAD_SOUND_URL)
-			osVal3 := protocol.MakeOutputSpeechTextValue(
-				game.GetMessage(game.GameoverMsg) + game.GetMessage(game.RepromptMsg1))
-			os := protocol.MakeOutputSpeechList(osVal1, osVal2, osVal3)
-			rep := protocol.MakeReprompt(protocol.MakeSimpleOutputSpeech(game.GetMessage(game.RepromptMsg1)))
-			payload = protocol.MakeCEKResponsePayload3(os, rep, false)
-		} else {
-			osVal1 := protocol.MakeOutputSpeechUrlValue(BUTSUKARU_SOUND_URL)
-			msg2 := game.GetMessage2Random(game.ItaiMsg, 0.3) + game.GetMessage2(game.ButsukaruMsg)
-			osVal2 := protocol.MakeOutputSpeechTextValue(msg2)
-			os := protocol.MakeOutputSpeechList(osVal1, osVal2)
-			rep := protocol.MakeReprompt(protocol.MakeSimpleOutputSpeech(game.GetMessage(game.RepromptMsg2)))
-			payload = protocol.MakeCEKResponsePayload3(os, rep, false)
-		}
-	}
-
-	return protocol.MakeCEKResponse(payload)
 }
 
 func handleLocation(req protocol.CEKRequest, userID string) protocol.CEKResponse {

@@ -36,6 +36,8 @@ const (
 	NoCity
 	WeatherNotFound
 	Tomete
+	Arigato
+	Sugoine
 )
 
 var (
@@ -90,6 +92,11 @@ func init() {
 	messageMap2[NoCity] = []string{"ごめんなさい、よく聞き取れませんでした。もう一度言っていただけますか？", "残念ながらお答えできません。", "申し訳ありません。わかりませんでした。"}
 
 	messageMap2[Tomete] = []string{"また呼んでくださいね。", "またのご利用をお待ちしております。", "では、失礼します。", "はい、さようなら。", "はい、ありがとうございました。"}
+
+	messageMap2[Tomete] = []string{"どういたしまして。", "お役に立てて何よりです。", "なんのこれしき。"}
+
+	messageMap2[Sugoine] = []string{"もったいないお言葉ありがとうございます。", "えっ、そんな{[1000]}てへ。", "ありがとう。"}
+
 }
 
 // Assume messageMap[t] always exists
