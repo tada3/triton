@@ -58,6 +58,8 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 		intentName := getIntentName(req)
 		if intentName == "CurrentWeather" {
 			response = handleCurrentWeather(req, userId)
+		} else if intentName == "Tomete" {
+			response = handleTomete(req, userId)
 		} else if intentName == "Retry" {
 			response = handleStartOver(req, userId)
 		} else if intentName == "Move" {
@@ -146,6 +148,12 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		msg = game.GetMessage(game.CurrentWeather, city, weather.Weather, weather.Temp)
 	}
 	p = protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleTomete(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.Tomete)
+	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
 
