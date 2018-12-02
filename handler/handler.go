@@ -153,7 +153,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 func handleTomete(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 	msg := game.GetMessage2(game.Tomete)
-	p := protocol.MakeCEKResponsePayload(msg, false)
+	p := protocol.MakeCEKResponsePayload(msg, true)
 	return protocol.MakeCEKResponse(p)
 }
 
