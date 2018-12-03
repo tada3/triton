@@ -60,6 +60,8 @@ INSERT INTO country_city VALUES ('埼玉県','埼玉',NULL,'さいたま');
 INSERT INTO country_city VALUES ('神奈川県','神奈川',NULL,'横浜');
 INSERT INTO country_city VALUES ('沖縄県','沖縄',NULL,'那覇');
 
+INSERT INTO country_city VALUES ('サハリン','サハリン州',NULL,'ユジノ-サハリンスク');
+
 
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;
 
