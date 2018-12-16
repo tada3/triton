@@ -24,6 +24,8 @@ type Config struct {
 
 	RedisHost string `default:"localhost"`
 	RedisPort int    `default:6379`
+
+	SoundFileBaseUrl string
 }
 
 func init() {

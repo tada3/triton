@@ -17,12 +17,6 @@ import (
 	"github.com/tada3/triton/tritondb"
 )
 
-const (
-	OPENING_SOUND_URL   string = "https://clova-common.line-scdn-dev.net/test/b_099.mp3"
-	DEAD_SOUND_URL      string = "https://clova-common.line-scdn-dev.net/test/dead-sound.mp3"
-	BUTSUKARU_SOUND_URL string = "https://clova-common.line-scdn-dev.net/test/butsukaru_04.mp3"
-)
-
 var (
 	masterRepo *game.GameMasterRepo
 )
@@ -338,7 +332,7 @@ func location2String222(loc game.Location) string {
 }
 
 func handleLaunchRequest() protocol.CEKResponse {
-	osVal1 := protocol.MakeOutputSpeechUrlValue(OPENING_SOUND_URL)
+	osVal1 := protocol.MakeOutputSpeechUrlValue(game.GetSoundURL(game.OpeningSound))
 	osVal2 := protocol.MakeOutputSpeechTextValue(game.GetMessage(game.WelcomeMsg))
 	os := protocol.MakeOutputSpeechList(osVal1, osVal2)
 	p := protocol.CEKResponsePayload{
