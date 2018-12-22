@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/tada3/triton/tritondb"
 	"github.com/tada3/triton/weather/owm"
 )
 
@@ -49,10 +50,18 @@ func clear() {
 
 func load(filepath string) {
 	fmt.Printf("Load %v\n", filepath)
+
 	count, err := owm.LoadCityList(filepath)
 	if err != nil {
 		fmt.Printf("Failed to load %v: %s\n", filepath, err.Error())
 		os.Exit(1)
 	}
 	fmt.Printf("Inserted %d records.\n", count)
+
+	count2, err := tritondb.RemoveShiFromJPCities()
+	if err != nil {
+		fmt.Printf("Failed to update %v: %s\n", filepath, err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf("Updated %d records.\n", count2)
 }

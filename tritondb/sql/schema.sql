@@ -73,3 +73,10 @@ select distinct city.countryName from country_city AS city, country_code AS code
 
 
 select * from country_city WHERE countryCode is null AND officialName not like '%州' AND officialName not like '%省' AND officialName not like '%市';
+
+
+SELECT name, TRIM(TRAILING '-shi' FROM name), country FROM city_list WHERE country = 'JP' AND name LIKE '%-shi';
+
+UPDATE city_list SET name = TRIM(TRAILING '-shi' FROM name) WHERE country = 'JP' AND name LIKE '%-shi';
+
+SELECT name, COUNT(name) FROM city_list GROUP BY name HAVING COUNT(name) > 30;

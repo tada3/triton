@@ -83,6 +83,21 @@ func LoadCityList(filepath string) (int64, error) {
 
 }
 
+func RemoveShiFromJPCities() (int64, error) {
+	dbc, err := db.NewOwmDbClient()
+	if err != nil {
+		return 0, err
+	}
+	err = dbc.Open()
+	if err != nil {
+		return 0, err
+	}
+	defer dbc.Close()
+
+	return deleteCityList(dbc)
+
+}
+
 func deleteCityList(dbc *db.OwmDbClient) (committed int64, err error) {
 	fmt.Println("XXXXX deleteCityList 000")
 	defer func() {
@@ -101,8 +116,11 @@ func deleteCityList(dbc *db.OwmDbClient) (committed int64, err error) {
 		return handleTxError(err, dbc, committed)
 	}
 
-	r, err := dbc.ExecTx(deleteSql)
-	committed, _ = r.RowsAffected()
+	result, err := dbc.ExecTx(deleteSql)
+	if err != nil {
+		return handleTxError(err, dbc, committed)
+	}
+	committed, _ = result.RowsAffected()
 
 	err = dbc.CommitTx()
 	if err != nil {
