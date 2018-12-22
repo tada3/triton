@@ -19,7 +19,7 @@ func init() {
 	var err error
 	dsn := getDataSourceName()
 	fmt.Printf("INFO Connecting to Redis(%s)..", dsn)
-	client, err = newRedisClient(dsn)
+	client, err = newRedisClient(dsn, getPassword())
 	if err != nil {
 		panic(err)
 	}
@@ -44,13 +44,13 @@ func Set(k, v string, e time.Duration) {
 	}
 }
 
-func newRedisClient(addr string) (*redis.Client, error) {
+func newRedisClient(addr string, passwd string) (*redis.Client, error) {
 	if addr == "" {
 		return nil, errors.New("addr should not be empty string")
 	}
 	return redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: "zenzaiD0ji",
+		Password: passwd,
 		PoolSize: 30,
 	}), nil
 }
@@ -60,4 +60,9 @@ func getDataSourceName() string {
 	// Assume cfg is never nil
 	return fmt.Sprintf(dataSourceNameFmt,
 		cfg.RedisHost, cfg.RedisPort)
+}
+
+func getPassword() string {
+	cfg := config.GetConfig()
+	return cfg.RedisPasswd
 }

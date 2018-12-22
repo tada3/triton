@@ -7,6 +7,16 @@ CREATE TABLE city_list (
     PRIMARY KEY (id)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
+CREATE TABLE preferred_city (
+    id int,
+    name varchar(255) COLLATE utf8_general_ci,
+    country varchar(10),
+    priority int,
+    PRIMARY KEY (id)
+) CHARACTER SET utf8 COLLATE utf8_bin;
+
+
+
 CREATE TABLE country_city (
   countryName varchar(255) NOT NULL,
   officialName varchar(255) DEFAULT NULL,
@@ -77,6 +87,24 @@ select * from country_city WHERE countryCode is null AND officialName not like '
 
 SELECT name, TRIM(TRAILING '-shi' FROM name), country FROM city_list WHERE country = 'JP' AND name LIKE '%-shi';
 
+12/23
 UPDATE city_list SET name = TRIM(TRAILING '-shi' FROM name) WHERE country = 'JP' AND name LIKE '%-shi';
 
 SELECT name, COUNT(name) FROM city_list GROUP BY name HAVING COUNT(name) > 30;
+
+
+INSERT INTO preferred_city VALUES (2113015, 'Chiba', 'JP', 100);
+INSERT INTO preferred_city VALUES (5392171, 'San Jose', 'US', 100);
+INSERT INTO preferred_city VALUES (5393052, 'Santa Cruz', 'US', 100);
+INSERT INTO preferred_city VALUES (4781708, 'Richmond', 'US', 100);
+INSERT INTO preferred_city VALUES (2643743, 'London', 'GB', 100);
+INSERT INTO preferred_city VALUES (1701668, 'Manila', 'PH', 100);
+INSERT INTO preferred_city VALUES (6174041, 'Victoria', 'CA', 100);
+INSERT INTO preferred_city VALUES (241131, 'Victoria', 'SC', 90);
+INSERT INTO preferred_city VALUES (6173331, 'Vancouver', 'CA', 100);
+INSERT INTO preferred_city VALUES (, '', '', 100);
+INSERT INTO preferred_city VALUES (, '', '', 100);
+INSERT INTO preferred_city VALUES (, '', '', 100);
+INSERT INTO preferred_city VALUES (, '', '', 100);
+INSERT INTO preferred_city VALUES (, '', '', 100);
+6174041 | Victoria | CA

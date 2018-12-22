@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tada3/triton/redis"
+	"github.com/tada3/triton/tritondb"
 	"github.com/tada3/triton/weather/model"
 	"github.com/tada3/triton/weather/owm"
 )
@@ -31,7 +32,6 @@ func init() {
 	}
 }
 
-
 func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	var cw *model.CurrentWeather
 	cw, ok := checkCache(cityName)
@@ -41,7 +41,7 @@ func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	}
 	fmt.Printf("LOG Cache2 Miss %s\n", cityName)
 
-	cityID, found, err := owm.GetCityID(cityName)
+	cityID, found, err := tritondb.GetCityID(cityName)
 	if err != nil {
 		// ignore error hrere
 		fmt.Printf("LOG DB error: %s\n", err.Error())
@@ -50,11 +50,11 @@ func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	var err2 error
 	if !found {
 		// use cityEn as it is
-		cw,err2 =  owmc.GetCurrentWeatherByName(cityName)
+		cw, err2 = owmc.GetCurrentWeatherByName(cityName)
 	} else {
 		// use cityID
 		fmt.Printf("cityID: %d\n", cityID)
-		cw, err2 =  owmc.GetCurrentWeatherByID(cityID)
+		cw, err2 = owmc.GetCurrentWeatherByID(cityID)
 	}
 	if err2 != nil {
 		return nil, err2

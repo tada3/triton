@@ -22,8 +22,9 @@ type Config struct {
 	MySQLUser     string `default:"triton"`
 	MySQLPasswd   string `default:triton`
 
-	RedisHost string `default:"localhost"`
-	RedisPort int    `default:6379`
+	RedisHost   string `default:"localhost"`
+	RedisPort   int    `default:6379`
+	RedisPasswd string
 
 	SoundFileBaseUrl string
 }
