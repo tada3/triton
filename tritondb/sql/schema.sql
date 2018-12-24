@@ -4,8 +4,11 @@ CREATE TABLE city_list (
     country varchar(10),
     lon double(9,6),
     lat double(9,6),    
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    KEY idx_name (name)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
+
+ALTER TABLE city_list ADD INDEX idx_name(name);
 
 CREATE TABLE preferred_city (
     id int,
