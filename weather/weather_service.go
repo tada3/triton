@@ -36,10 +36,14 @@ func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	var cw *model.CurrentWeather
 	cw, ok := checkCache(cityName)
 	if ok {
-		fmt.Printf("LOG Cache2 Hit %s\n", cityName)
+		if cw == nil {
+			fmt.Printf("LOG Cach2 Hit, but no weather data: %s\n", cityName)
+			return nil, nil
+		}
+		fmt.Printf("LOG Cache2 Hit: %s\n", cityName)
 		return cw, nil
 	}
-	fmt.Printf("LOG Cache2 Miss %s\n", cityName)
+	fmt.Printf("LOG Cache2 Miss: %s\n", cityName)
 
 	cityID, found, err := tritondb.GetCityID(cityName)
 	if err != nil {
@@ -59,6 +63,7 @@ func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
 	if err2 != nil {
 		return nil, err2
 	}
+	// Note that setCache() is called even when cw is nil.
 	setCache(cityName, cw)
 	return cw, nil
 }
@@ -74,6 +79,10 @@ func checkCache(cityName string) (*model.CurrentWeather, bool) {
 	v, ok := redis.Get(getRedisKey(cityName))
 	if !ok {
 		return nil, false
+	}
+	if v == "null" {
+		// Weather was not found last time.
+		return nil, true
 	}
 	cw := &model.CurrentWeather{}
 	err := json.Unmarshal([]byte(v), cw)
