@@ -146,7 +146,7 @@ func normalize(ocw *OwmCurrentWeather) (*model.CurrentWeather, error) {
 	var temp int64
 	cod := ocw.Cod.String()
 	if cod != "200" || len(ocw.Weather) == 0 {
-		fmt.Println("LOG Errorneous response: %+v\n", ocw)
+		fmt.Printf("LOG Errorneous response: %+v\n", ocw)
 		if cod == "404" {
 			return nil, nil
 		}
