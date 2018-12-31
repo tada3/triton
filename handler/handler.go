@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/tada3/triton/weather"
+	"github.com/tada3/triton/weather/model"
 
 	"github.com/tada3/triton/translation"
 
@@ -190,6 +191,54 @@ func getCityFromCountrySlot(req protocol.CEKRequest) string {
 		if !found {
 			fmt.Printf("WARN: city not found: %s\n", country)
 			return ""
+		}
+		return city
+	}
+
+	country = protocol.GetStringSlot(slots, "ken_jp")
+	if country != "" {
+		city, found, err := tritondb.CountryName2City(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return ""
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return ""
+		}
+		return city
+	}
+
+	return ""
+}
+
+func getCityFromCountrySlot2(req protocol.CEKRequest) *model.CityInfo {
+	intent := req.Request.Intent
+	slots := intent.Slots
+	country := protocol.GetStringSlot(slots, "country")
+	if country != "" {
+		city, found, err := tritondb.CountryCode2City2(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return nil
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return nil
+		}
+		return city
+	}
+
+	country = protocol.GetStringSlot(slots, "country_snt")
+	if country != "" {
+		city, found, err := tritondb.CountryName2City2(country)
+		if err != nil {
+			fmt.Println("ERROR!", err.Error())
+			return nil
+		}
+		if !found {
+			fmt.Printf("WARN: city not found: %s\n", country)
+			return nil
 		}
 		return city
 	}
