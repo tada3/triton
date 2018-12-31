@@ -60,8 +60,6 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 			response = handleSugoine(req, userId)
 		} else if intentName == "Retry" {
 			response = handleStartOver(req, userId)
-		} else if intentName == "Location" {
-			response = handleLocation(req, userId)
 		} else {
 			response = handleUnknownRequest(req)
 		}
@@ -302,25 +300,6 @@ func handleStartOver(req protocol.CEKRequest, userId string) protocol.CEKRespons
 	}
 
 	msg1 := game.GetMessage(game.START_MSG_REPEAT, start, goal)
-	msg2 := game.GetMessage(game.RepromptMsg2)
-
-	p := protocol.MakeCEKResponsePayload２(msg1, msg2, false)
-	return protocol.MakeCEKResponse(p)
-}
-
-func handleLocation(req protocol.CEKRequest, userID string) protocol.CEKResponse {
-	gm := masterRepo.GetGameMaster(userID)
-	if gm == nil {
-		return handleInvalidRequest(req)
-	}
-
-	loc, err := gm.Locate()
-	if err != nil {
-		fmt.Println("ERROR!", err)
-		return handleInvalidRequest(req)
-	}
-
-	msg1 := game.GetMessage(game.LocationMsg, loc)
 	msg2 := game.GetMessage(game.RepromptMsg2)
 
 	p := protocol.MakeCEKResponsePayload２(msg1, msg2, false)
