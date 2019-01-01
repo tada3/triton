@@ -8,4 +8,6 @@ type CurrentWeather struct {
 type CityInfo struct {
 	CountryCode string
 	CityName    string
+	CityNameEN  string
+	CityID      int64
 }

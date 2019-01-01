@@ -61,7 +61,7 @@ func NewOwmClient(baseURL, apiKey string, timeout int) (*OwmClient, error) {
 	}, nil
 }
 
-func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName string) (*http.Request, error) {
+func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName, countryCode string) (*http.Request, error) {
 	u := *c.baseURL
 	u.Path = path.Join(c.baseURL.Path, spath)
 
@@ -71,7 +71,11 @@ func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName string) (
 	if cityID > 0 {
 		q.Set("id", strconv.FormatInt(cityID, 10))
 	} else {
-		q.Set("q", cityName)
+		qParam := cityName
+		if countryCode != "" {
+			qParam = qParam + "," + countryCode
+		}
+		q.Set("q", qParam)
 	}
 	u.RawQuery = q.Encode()
 
@@ -91,7 +95,7 @@ func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName string) (
 // and returns it as CurrentWeather.
 func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, error) {
 
-	req, err := c.NewGetRequest(CurrentWeatherPath, id, "")
+	req, err := c.NewGetRequest(CurrentWeatherPath, id, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +118,30 @@ func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, erro
 
 func (c *OwmClient) GetCurrentWeatherByName(name string) (*model.CurrentWeather, error) {
 
-	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name)
+	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, "")
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	ocw := new(OwmCurrentWeather)
+
+	if err := decodeBody2(res, ocw); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("YYY ocw=%+v\n", ocw)
+
+	return normalize(ocw)
+}
+
+func (c *OwmClient) GetCurrentWeatherByName2(name, code string) (*model.CurrentWeather, error) {
+
+	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, code)
 	if err != nil {
 		return nil, err
 	}

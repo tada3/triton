@@ -4,18 +4,154 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	"github.com/tada3/triton/weather/model"
 )
 
 const (
-	selectPreferredCitySQL = "SELECT id from preferred_city WHERE name = ? ORDER BY priority DESC"
-	selectCityListSQL      = "SELECT id from city_list WHERE name = ?"
-	removeShiSQL           = "UPDATE city_list SET name = TRIM(TRAILING '-shi' FROM name) WHERE country = 'JP' AND name LIKE '%-shi'"
+	selectPreferredCitySQL          = "SELECT id from preferred_city WHERE name = ? ORDER BY priority DESC"
+	selectCityListSQL               = "SELECT id from city_list WHERE name = ?"
+	removeShiSQL                    = "UPDATE city_list SET name = TRIM(TRAILING '-shi' FROM name) WHERE country = 'JP' AND name LIKE '%-shi'"
+	selectPreferredCitySQL2         = "SELECT id from preferred_city WHERE name=? AND country=? ORDER BY priority DESC"
+	selectPreferredCityNoCountrySQL = "SELECT id, country from preferred_city WHERE name=? ORDER BY priority DESC"
+	selectCityListSQL2              = "SELECT id from city_list WHERE name=? AND country=?"
+	selectCityListNoCountrySQL      = "SELECT id, country from city_list WHERE name=?"
 )
 
 var (
-	stmtP *sql.Stmt
-	stmtC *sql.Stmt
+	stmtP    *sql.Stmt
+	stmtC    *sql.Stmt
+	stmtP2   *sql.Stmt
+	stmtP2NC *sql.Stmt
+	stmtC2   *sql.Stmt
+	stmtC2NC *sql.Stmt
 )
+
+func getCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
+	var err error
+	if stmtP2 == nil {
+		stmtP2, err = getDbClient().PrepareStmt(selectPreferredCitySQL2)
+		if err != nil {
+			return -1, false
+		}
+	}
+
+	var id int64
+	err = stmtP2.QueryRow(cityName, countryCode).Scan(&id)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// Error
+			fmt.Printf("ERROR! Query failed: %s, stmt=%v\n", err.Error(), stmtP2)
+			stmtP2.Close()
+			stmtP2 = nil
+		}
+		return 0, false
+	}
+	return id, true
+}
+
+func getCityIDFromPreferredCityNoCountry(cityName string) (int64, string, bool) {
+	var err error
+	if stmtP2NC == nil {
+		stmtP2, err = getDbClient().PrepareStmt(selectPreferredCityNoCountrySQL)
+		if err != nil {
+			return 0, "", false
+		}
+	}
+
+	var id int64
+	var code string
+	err = stmtP2NC.QueryRow(cityName).Scan(&id, &code)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// Error
+			fmt.Printf("ERROR! Query failed: %s, stmt=%v\n", err.Error(), stmtP2NC)
+			stmtP2NC.Close()
+			stmtP = nil
+		}
+		return 0, "", false
+	}
+	return id, code, true
+}
+
+func getCityIDFromCityList(cityName, countryCode string) (int64, bool) {
+	var err error
+	if stmtC2 == nil {
+		stmtC2, err = getDbClient().PrepareStmt(selectCityListSQL2)
+		if err != nil {
+			return 0, false
+		}
+	}
+
+	var id int64
+	err = stmtC2.QueryRow(cityName, countryCode).Scan(&id)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// Error
+			fmt.Printf("ERROR! Query failed: %s, stmt=%v\n", err.Error(), stmtC2)
+			stmtC2.Close()
+			stmtC2 = nil
+		}
+		return 0, false
+	}
+	return id, true
+}
+
+func getCityIDFromCityListNoCountry(cityName string) (int64, string, bool) {
+	var err error
+	if stmtC2NC == nil {
+		stmtC2NC, err = getDbClient().PrepareStmt(selectCityListNoCountrySQL)
+		if err != nil {
+			return 0, "", false
+		}
+	}
+
+	var id int64
+	var code string
+	err = stmtC2NC.QueryRow(cityName).Scan(&id, &code)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// Error
+			fmt.Printf("ERROR! Query failed: %s, stmt=%v\n", err.Error(), stmtC2NC)
+			stmtC2NC.Close()
+			stmtC2NC = nil
+		}
+		return 0, "", false
+	}
+	return id, code, true
+
+}
+
+// GetCityID2 get city ID for the specified city name from DB.
+func GetCityID2(city *model.CityInfo) (int64, string, bool) {
+
+	if city.CountryCode != "" {
+		// By cityName and countryCode
+		fmt.Println("AAAAAAAA")
+		id, found := getCityIDFromPreferredCity(city.CityNameEN, city.CountryCode)
+		if found {
+			return id, city.CountryCode, true
+		}
+		fmt.Println("BBBBBBBBB")
+		id, found = getCityIDFromCityList(city.CityNameEN, city.CountryCode)
+		if found {
+			return id, city.CountryCode, true
+		}
+	} else {
+		// By cityName only
+		fmt.Println("CCCCCCCCC")
+		id, code, found := getCityIDFromPreferredCityNoCountry(city.CityNameEN)
+		if found {
+			return id, code, true
+		}
+		fmt.Println("DDDDDDDDDD")
+		id, code, found = getCityIDFromCityListNoCountry(city.CityNameEN)
+		if found {
+			return id, code, true
+		}
+	}
+	return 0, "", false
+}
 
 // GetCityID get city ID for the specified city name from DB.
 func GetCityID(city string) (int64, bool, error) {

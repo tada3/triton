@@ -2,19 +2,22 @@ package tritondb
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/tada3/triton/weather/model"
 )
 
 const (
-	selectByNameSql  = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
-	selectByNameSql2 = "SELECT countryCode,cityName from country_city WHERE countryName = ? OR officialName = ?"
-	selectByCodeSql  = "SELECT cityName from country_city WHERE countryCode = ?"
+	selectByNameSql            = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
+	selectByNameSql2           = "SELECT countryCode,cityName from country_city WHERE countryName = ? OR officialName = ?"
+	selectByCodeSql            = "SELECT cityName from country_city WHERE countryCode = ?"
+	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ?"
 )
 
 var (
-	stmtByName *sql.Stmt
-	stmtByCode *sql.Stmt
+	stmtByName            *sql.Stmt
+	stmtByCode            *sql.Stmt
+	stmtCountryNameByCode *sql.Stmt
 )
 
 func CountryName2City(cn string) (string, bool, error) {
@@ -113,4 +116,29 @@ func CountryCode2City2(code string) (*model.CityInfo, bool, error) {
 	}
 	cityInfo.CityName = city
 	return cityInfo, true, nil
+}
+
+func CountryCode2CountryName(code string) (string, bool) {
+	if stmtCountryNameByCode == nil {
+		var pErr error
+		stmtCountryNameByCode, pErr = getDbClient().PrepareStmt(selectCountryNameByCodeSQL)
+		if pErr != nil {
+			// ERROR!
+			fmt.Printf("ERROR! DB ERROR: %s\n", pErr.Error())
+			return "", false
+		}
+	}
+
+	var country string
+	err := stmtCountryNameByCode.QueryRow(code).Scan(&country)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			// ERROR!
+			fmt.Printf("ERROR! Query failed: %s\n", err.Error())
+			stmtCountryNameByCode.Close()
+			stmtCountryNameByCode = nil
+		}
+		return "", false
+	}
+	return country, true
 }
