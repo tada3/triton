@@ -15,5 +15,6 @@ config.yaml
 /tester
 log/
 mysql.sh
+redis.sh
 
 
