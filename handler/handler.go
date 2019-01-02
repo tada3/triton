@@ -154,7 +154,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		}
 	} else {
 		fmt.Printf("Weather for %v is not found.\n", city)
-		msg = game.GetMessage2(game.WeatherNotFound, city)
+		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
 	}
 	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
