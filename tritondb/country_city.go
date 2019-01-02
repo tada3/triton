@@ -9,15 +9,16 @@ import (
 
 const (
 	selectByNameSql            = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
-	selectByNameSql2           = "SELECT countryCode,cityName from country_city WHERE countryName = ? OR officialName = ?"
+	selectByNameSql2           = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
 	selectByCodeSql            = "SELECT cityName from country_city WHERE countryCode = ?"
-	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ?"
+	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ? AND isCountry > 0"
 )
 
 var (
 	stmtByName            *sql.Stmt
 	stmtByCode            *sql.Stmt
 	stmtCountryNameByCode *sql.Stmt
+	stmtByName2           *sql.Stmt
 )
 
 func CountryName2City(cn string) (string, bool, error) {
@@ -44,29 +45,27 @@ func CountryName2City(cn string) (string, bool, error) {
 	return city, true, nil
 }
 
-func CountryName2City2(cn string) (*model.CityInfo, bool, error) {
-	if stmtByName == nil {
-		var pErr error
-		stmtByName, pErr = getDbClient().PrepareStmt(selectByNameSql2)
-		if pErr != nil {
-			return nil, false, pErr
+func CountryName2City2(cn string) (*model.CityInfo, bool) {
+	var err error
+	if stmtByName2 == nil {
+		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql2)
+		if err != nil {
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectByNameSql2)
+			return nil, false
 		}
 	}
 
 	cityInfo := &model.CityInfo{}
-	err := stmtByName.QueryRow(cn, cn).Scan(&cityInfo.CountryCode,
-		&cityInfo.CityName)
+	err = stmtByName2.QueryRow(cn, cn).Scan(&(cityInfo.CountryCode),
+		&(cityInfo.CityName))
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// Not Found
-			return nil, false, nil
+		if err != sql.ErrNoRows {
+			stmtByName2.Close()
+			stmtByName2 = nil
 		}
-		stmtByName.Close()
-		stmtByName = nil
-		return nil, false, err
+		return nil, false
 	}
-
-	return cityInfo, true, nil
+	return cityInfo, true
 }
 
 func CountryCode2City(code string) (string, bool, error) {

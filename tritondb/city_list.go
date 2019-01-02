@@ -32,6 +32,7 @@ func getCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
 	if stmtP2 == nil {
 		stmtP2, err = getDbClient().PrepareStmt(selectPreferredCitySQL2)
 		if err != nil {
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectPreferredCitySQL2)
 			return -1, false
 		}
 	}
@@ -53,8 +54,9 @@ func getCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
 func getCityIDFromPreferredCityNoCountry(cityName string) (int64, string, bool) {
 	var err error
 	if stmtP2NC == nil {
-		stmtP2, err = getDbClient().PrepareStmt(selectPreferredCityNoCountrySQL)
+		stmtP2NC, err = getDbClient().PrepareStmt(selectPreferredCityNoCountrySQL)
 		if err != nil {
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectPreferredCityNoCountrySQL)
 			return 0, "", false
 		}
 	}
@@ -79,6 +81,7 @@ func getCityIDFromCityList(cityName, countryCode string) (int64, bool) {
 	if stmtC2 == nil {
 		stmtC2, err = getDbClient().PrepareStmt(selectCityListSQL2)
 		if err != nil {
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectCityListSQL2)
 			return 0, false
 		}
 	}
@@ -102,6 +105,7 @@ func getCityIDFromCityListNoCountry(cityName string) (int64, string, bool) {
 	if stmtC2NC == nil {
 		stmtC2NC, err = getDbClient().PrepareStmt(selectCityListNoCountrySQL)
 		if err != nil {
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectCityListNoCountrySQL)
 			return 0, "", false
 		}
 	}
@@ -127,24 +131,20 @@ func GetCityID2(city *model.CityInfo) (int64, string, bool) {
 
 	if city.CountryCode != "" {
 		// By cityName and countryCode
-		fmt.Println("AAAAAAAA")
 		id, found := getCityIDFromPreferredCity(city.CityNameEN, city.CountryCode)
 		if found {
 			return id, city.CountryCode, true
 		}
-		fmt.Println("BBBBBBBBB")
 		id, found = getCityIDFromCityList(city.CityNameEN, city.CountryCode)
 		if found {
 			return id, city.CountryCode, true
 		}
 	} else {
 		// By cityName only
-		fmt.Println("CCCCCCCCC")
 		id, code, found := getCityIDFromPreferredCityNoCountry(city.CityNameEN)
 		if found {
 			return id, code, true
 		}
-		fmt.Println("DDDDDDDDDD")
 		id, code, found = getCityIDFromCityListNoCountry(city.CityNameEN)
 		if found {
 			return id, code, true

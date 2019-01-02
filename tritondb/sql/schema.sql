@@ -25,6 +25,7 @@ CREATE TABLE country_city (
   officialName varchar(255) DEFAULT NULL,
   countryCode varchar(10) DEFAULT NULL,
   cityName varchar(255) DEFAULT NULL,
+  isCountry int DEFAULT 0,
   PRIMARY KEY (countryName)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
@@ -35,6 +36,8 @@ CREATE TABLE country_code (
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
 ALTER TABLE country_city ADD COLUMN countryCode varchar(10) DEFAULT NULL AFTER officialName;
+ALTER TABLE country_city ADD COLUMN isCountry int DEFAULT 0 AFTER cityName;
+
 
 UPDATE country_city AS city, country_code AS code SET city.countryCode = code.countryCode WHERE city.officialName = code.officialName;
 UPDATE country_city AS city, country_code AS code SET city.countryCode = code.countryCode WHERE city.countryName = code.officialName;
