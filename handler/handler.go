@@ -139,12 +139,10 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	if weather != nil {
 		countryName := ""
-		if city.CountryCode != "" {
+		if city.CountryCode != "" && city.CountryCode != "HK" && city.CountryCode != "JP" {
 			cn, found := tritondb.CountryCode2CountryName(city.CountryCode)
 			if found {
-				if cn != "香港" {
-					countryName = cn
-				}
+				countryName = cn
 			} else {
 				fmt.Printf("CountryName is not found: %s\n", city.CountryCode)
 			}
