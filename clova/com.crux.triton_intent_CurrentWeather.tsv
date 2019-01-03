@@ -1,0 +1,46 @@
+[INTENT SLOT]
+city	CLOVA.WORLD_CITY
+city_jp	CLOVA.JP_ADDRESS_SHI
+city_snt	SNT_WORLD_CITY
+ken_jp	CLOVA.JP_ADDRESS_KEN
+country	CLOVA.WORLD_COUNTRY
+country_snt	SNT_WORLD_COUNTRY
+
+[INTENT EXPRESSION]
+<city>リスボン</city>
+<city>サンパウロ</city>は
+現在の<city>大阪</city>の天気は
+今の<city>ワシントン</city>の天気は
+<city>台北</city>の現在の天気は
+<city>バンコク</city>の今の天気
+<city>ローマ</city>の天気を教えて
+<city>デトロイト</city>の天気は
+<city>ジャカルタ</city>の天気
+<city>メキシコシティ</city>の天候
+<city>シドニー</city>の今の天気を教えて
+<city_jp>那覇</city_jp>
+<city_jp>横須賀</city_jp>は
+<city_jp>彦根</city_jp>はどう
+<city_jp>平戸</city_jp>の天気を教えて
+<city_jp>町田</city_jp>の天気は
+<city_jp>博多</city_jp>の今の天気を教えて
+今の<city_jp>横須賀</city_jp>の天気は
+現在の<city_jp>横須賀</city_jp>の天気は
+<city_jp>横須賀</city_jp>の天気は
+<city_snt>リオデジャネイロ</city_snt>
+<city_snt>ホノルル</city_snt>はどう
+<ken_jp>岩手</ken_jp>
+今の<ken_jp>神奈川</ken_jp>の天気
+<ken_jp>沖縄</ken_jp>の天気
+<ken_jp>北海道</ken_jp>の天気は
+<country>フィリピン</country>
+<country>中国</country>の天気は
+<country>イタリア</country>の天気
+<country_snt>アフリカ</country_snt>
+<country_snt>ハワイ</country_snt>の天気をお願い
+
+
+
+
+
+
