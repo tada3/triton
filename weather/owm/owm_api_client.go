@@ -181,7 +181,9 @@ func normalize(ocw *OwmCurrentWeather) (*model.CurrentWeather, error) {
 	}
 	weather = GetWeatherCondition(ocw.Weather[0].Id)
 	temp = marume(ocw.Main.Temp)
-	return &model.CurrentWeather{weather, temp}, nil
+	return &model.CurrentWeather{
+		Weather: weather,
+		Temp:    temp}, nil
 }
 
 func marume(t float64) int64 {

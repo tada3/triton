@@ -58,7 +58,7 @@ func GetCurrentWeather2(city *model.CityInfo) (*model.CurrentWeather, error) {
 			return nil, err
 		}
 
-		setCache2(city, cw)
+		setCache3(city, cw, countryCode)
 		// key of the cache data should be the original city struct
 		city.CountryCode = countryCode
 		return cw, nil
@@ -133,6 +133,9 @@ func checkCache2(city *model.CityInfo) (*model.CurrentWeather, bool) {
 		fmt.Printf("LOG Unmarshal failed: %s\n", err.Error())
 		return nil, false
 	}
+	if city.CountryCode == "" {
+		city.CountryCode = cw.CountryCode
+	}
 	return cw, true
 }
 
@@ -165,6 +168,19 @@ func setCache(cityName string, cw *model.CurrentWeather) {
 }
 
 func setCache2(city *model.CityInfo, cw *model.CurrentWeather) {
+	b, err := json.Marshal(cw)
+	if err != nil {
+		fmt.Printf("LOG Marshal failed: %s\n", err.Error())
+		return
+	}
+	v := string(b)
+	redis.Set(getRedisKey2(city), v, cacheTimeout)
+}
+
+func setCache3(city *model.CityInfo, cw *model.CurrentWeather, countryCode string) {
+	if city.CountryCode == "" {
+		cw.CountryCode = countryCode
+	}
 	b, err := json.Marshal(cw)
 	if err != nil {
 		fmt.Printf("LOG Marshal failed: %s\n", err.Error())

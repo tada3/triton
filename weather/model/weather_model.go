@@ -1,8 +1,9 @@
 package model
 
 type CurrentWeather struct {
-	Weather string
-	Temp    int64
+	Weather     string
+	Temp        int64
+	CountryCode string
 }
 
 type CityInfo struct {
