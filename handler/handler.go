@@ -245,15 +245,13 @@ func getCityFromCitySlot2(req protocol.CEKRequest) *model.CityInfo {
 func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo {
 	country := protocol.GetStringSlot(slots, "country")
 	if country != "" {
-		fmt.Println("AAAA", country)
 		city, found, err := tritondb.CountryCode2City2(country)
-		fmt.Println("XXXXXX city=%v\n", city)
 		if err != nil {
 			fmt.Println("ERROR!", err.Error())
 			return nil
 		}
 		if !found {
-			fmt.Printf("WARN: city not found: %s\n", country)
+			fmt.Printf("WARN: country not found: %s\n", country)
 			return nil
 		}
 		return city
@@ -263,7 +261,7 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo 
 	if country != "" {
 		city, found := tritondb.CountryName2City2(country)
 		if !found {
-			fmt.Printf("WARN: city not found: %s\n", country)
+			fmt.Printf("WARN: country not found: %s\n", country)
 			return nil
 		}
 		return city
@@ -273,7 +271,7 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo 
 	if country != "" {
 		city, found := tritondb.CountryName2City2(country)
 		if !found {
-			fmt.Printf("WARN: city not found: %s\n", country)
+			fmt.Printf("WARN: country not found: %s\n", country)
 			return nil
 		}
 		city.CountryCode = "JP"
@@ -320,7 +318,7 @@ func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	intent := req.Request.Intent
 	slots := intent.Slots
 	cityInfo := getCityFromCountrySlot3(slots)
-	fmt.Printf("XXX cityInfo=%v\n", cityInfo)
+	fmt.Printf("city00: %v\n", cityInfo)
 	return getCityFromCitySlot3(slots, cityInfo)
 }
 

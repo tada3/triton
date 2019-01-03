@@ -110,7 +110,7 @@ INSERT INTO preferred_city VALUES (241131, 'Victoria', 'SC', 90);
 INSERT INTO preferred_city VALUES (6173331, 'Vancouver', 'CA', 100);
 INSERT INTO preferred_city VALUES (1819729, 'Hong Kong S.A.R', 'HK', 100);
 INSERT INTO preferred_city VALUES (1583992, 'Da nang', 'VN', 100);
-INSERT INTO preferred_city VALUES (, '', '', 100);
+INSERT INTO preferred_city VALUES (3872395, 'San Antonio', 'CL', 100);
 INSERT INTO preferred_city VALUES (, '', '', 100);
 INSERT INTO preferred_city VALUES (, '', '', 100);
 6174041 | Victoria | CA
