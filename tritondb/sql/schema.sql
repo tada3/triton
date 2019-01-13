@@ -77,6 +77,9 @@ INSERT INTO country_city VALUES ('神奈川県','神奈川',NULL,'横浜');
 INSERT INTO country_city VALUES ('沖縄県','沖縄',NULL,'那覇');
 
 INSERT INTO country_city VALUES ('サハリン','サハリン州',NULL,'ユジノ-サハリンスク');
+INSERT INTO country_city VALUES ('バリ','バリ島','ID','デンパサール', 0);
+INSERT INTO country_city VALUES ('サイパン','サイパン島','MP','サイパン', 0);
+INSERT INTO country_city VALUES ('北マリアナ諸島','北マリアナ諸島自治連邦区','MP','サイパン', 1);
 
 
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;
@@ -113,4 +116,5 @@ INSERT INTO preferred_city VALUES (1583992, 'Da nang', 'VN', 100);
 INSERT INTO preferred_city VALUES (3872395, 'San Antonio', 'CL', 100);
 INSERT INTO preferred_city VALUES (1832909, 'Young', 'KR', 100);
 INSERT INTO preferred_city VALUES (4726206, 'San antonio', 'US', 110);
+INSERT INTO preferred_city VALUES (3169070, 'Rome', 'IT', 100);
 6174041 | Victoria | CA

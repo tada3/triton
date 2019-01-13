@@ -108,7 +108,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	// 0. Get City
 	city := genCityInfoFromSlots(req)
 	if city == nil {
-		fmt.Printf("LOG No slots were passed: %+v", req.Request.Intent)
+		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
@@ -242,19 +242,22 @@ func getCityFromCitySlot2(req protocol.CEKRequest) *model.CityInfo {
 	return nil
 }
 
-func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo {
+// getCityFromCountrySlot3 checks country type slots and create CityInfo with it.
+// Second return value represents weather country type slots exists or not.
+func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo, bool) {
+	countryExists := true
 	country := protocol.GetStringSlot(slots, "country")
 	if country != "" {
 		city, found, err := tritondb.CountryCode2City2(country)
 		if err != nil {
 			fmt.Println("ERROR!", err.Error())
-			return nil
+			return nil, countryExists
 		}
 		if !found {
 			fmt.Printf("WARN: country not found: %s\n", country)
-			return nil
+			return nil, countryExists
 		}
-		return city
+		return city, countryExists
 	}
 
 	country = protocol.GetStringSlot(slots, "country_snt")
@@ -262,9 +265,9 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo 
 		city, found := tritondb.CountryName2City2(country)
 		if !found {
 			fmt.Printf("WARN: country not found: %s\n", country)
-			return nil
+			return nil, countryExists
 		}
-		return city
+		return city, countryExists
 	}
 
 	country = protocol.GetStringSlot(slots, "ken_jp")
@@ -272,13 +275,14 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) *model.CityInfo 
 		city, found := tritondb.CountryName2City2(country)
 		if !found {
 			fmt.Printf("WARN: country not found: %s\n", country)
-			return nil
+			return nil, countryExists
 		}
 		city.CountryCode = "JP"
-		return city
+		return city, countryExists
 	}
 
-	return nil
+	countryExists = false
+	return nil, countryExists
 }
 
 func getCityFromCitySlot3(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) *model.CityInfo {
@@ -317,7 +321,10 @@ func getCityFromCitySlot3(slots map[string]protocol.CEKSlot, cityInfo *model.Cit
 func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	intent := req.Request.Intent
 	slots := intent.Slots
-	cityInfo := getCityFromCountrySlot3(slots)
+	cityInfo, countryExists := getCityFromCountrySlot3(slots)
+	if !countryExists || cityInfo == nil {
+		return nil
+	}
 	fmt.Printf("city00: %v\n", cityInfo)
 	return getCityFromCitySlot3(slots, cityInfo)
 }
