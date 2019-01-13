@@ -35,6 +35,15 @@ CREATE TABLE country_code (
   PRIMARY KEY (countryCode)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
+CREATE TABLE poi_city (
+  id int,
+  name varchar(255) NOT NULL COLLATE utf8_general_ci,
+  countryCode varchar(10) DEFAULT NULL,
+  name2 varchar(255) DEFAULT NULL,
+  cityName varchar(255) NOT NULL,
+  PRIMARY KEY (id)
+) CHARACTER SET utf8 COLLATE utf8_bin;
+
 ALTER TABLE country_city ADD COLUMN countryCode varchar(10) DEFAULT NULL AFTER officialName;
 ALTER TABLE country_city ADD COLUMN isCountry int DEFAULT 0 AFTER cityName;
 
@@ -80,6 +89,9 @@ INSERT INTO country_city VALUES ('サハリン','サハリン州',NULL,'ユジ�
 INSERT INTO country_city VALUES ('バリ','バリ島','ID','デンパサール', 0);
 INSERT INTO country_city VALUES ('サイパン','サイパン島','MP','サイパン', 0);
 INSERT INTO country_city VALUES ('北マリアナ諸島','北マリアナ諸島自治連邦区','MP','サイパン', 1);
+
+
+INSERT INTO poi_city VALUES ('エッフェル塔','','MP','サイパン', 1);
 
 
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;

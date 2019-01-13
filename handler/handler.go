@@ -315,14 +315,51 @@ func getCityFromCitySlot3(slots map[string]protocol.CEKSlot, cityInfo *model.Cit
 		}
 		return cityInfo
 	}
+
 	return cityInfo
 }
+
+/**
+func getCityFromPoiSlot(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) *model.CityInfo {
+	if cityInfo == nil {
+		cityInfo = &model.CityInfo{}
+	}
+
+	var poiName string
+
+	poiName = protocol.GetStringSlot(slots, "poi_snt")
+	if poiName != "" {
+		cityInfo.CityName = cityName
+		return cityInfo
+	}
+
+	cityName = protocol.GetStringSlot(slots, "city_snt")
+	if cityName != "" {
+		cityInfo.CityName = cityName
+		return cityInfo
+	}
+
+	cityName = protocol.GetStringSlot(slots, "city_jp")
+	if cityName != "" {
+		if strings.HasSuffix(cityName, "市") {
+			cityName = strings.TrimRight(cityName, "市")
+		}
+		cityInfo.CityName = cityName
+		if cityInfo.CountryCode == "" {
+			cityInfo.CountryCode = "JP"
+		}
+		return cityInfo
+	}
+
+	return cityInfo
+}
+**/
 
 func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	intent := req.Request.Intent
 	slots := intent.Slots
 	cityInfo, countryExists := getCityFromCountrySlot3(slots)
-	if !countryExists || cityInfo == nil {
+	if countryExists && cityInfo == nil {
 		return nil
 	}
 	fmt.Printf("city00: %v\n", cityInfo)
