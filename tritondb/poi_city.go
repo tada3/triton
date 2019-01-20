@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	sqlSelectPoiCity1 = "SELECT cityName from poi_city WHERE (name = ? OR name2 = ?) AND countryCode = ?"
-	sqlSelectPoiCity2 = "SELECT cityName, countryCode from poi_city WHERE (name = ? OR name2 = ?)"
+	sqlSelectPoiCity1 = "SELECT cityName from poi_city WHERE (name = ? OR name2 = ?) AND countryCode = ? ORDER BY precedence DESC"
+	sqlSelectPoiCity2 = "SELECT cityName, countryCode from poi_city WHERE (name = ? OR name2 = ?) ORDER BY precedence DESC"
 )
 
 var (

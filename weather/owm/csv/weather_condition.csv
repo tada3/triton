@@ -23,6 +23,18 @@
 522, 300, 強いにわか雨, heavy intensity shower rain
 531, 300, 時々にわか雨, ragged shower rain
 
+#
+600, 400, 小雪, light snow
+601, 400, 雪, snow
+602, 400, 強い雪, heavy snow
+611, 400, 凍雨, sleet
+612, 400, にわか凍雨, shower sleet
+615, 413, 弱いみぞれ, light rain and snow
+616, 413, みぞれ, rain and snow
+620, 400, 弱いにわか雪, light shower snow
+621, 400, にわか雪, shower snow
+622, 400, 強いにわか雪, heavy shower snow
+
 # Group 7xx: Atmosphere
 701, 209, もや, mist
 711, 209, 煙, smoke

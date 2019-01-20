@@ -107,7 +107,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	// 0. Get City
 	city := genCityInfoFromSlots(req)
-	if city == nil {
+	if city == nil || (city.CityName == "" && city.CityNameEN == "") {
 		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
@@ -116,14 +116,16 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	fmt.Printf("city0: %v\n", city)
 
 	// 1. Translation
-	var err error
-	city.CityNameEN, err = translation.Translate(city.CityName)
-	if err != nil {
-		fmt.Println("ERROR!", err)
-		msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
-		return getErrorResponse(msg)
+	if city.CityNameEN == "" {
+		var err error
+		city.CityNameEN, err = translation.Translate(city.CityName)
+		if err != nil {
+			fmt.Println("ERROR!", err)
+			msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+			return getErrorResponse(msg)
+		}
+		fmt.Printf("city1: %v\n", city)
 	}
-	fmt.Printf("city1: %v\n", city)
 
 	// 2. Get weather
 	weather, err := weather.GetCurrentWeather2(city)
@@ -310,8 +312,8 @@ func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	fmt.Printf("city00: %v\n", cityInfo)
 
 	cityInfo, poiExists := getCityFromPoiSlots(slots, cityInfo)
-	if poiExists && cityInfo.CityName == "" {
-		return nil
+	if poiExists {
+		return cityInfo
 	}
 
 	return getCityFromCitySlot3(slots, cityInfo)

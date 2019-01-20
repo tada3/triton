@@ -11,12 +11,21 @@ CREATE TABLE city_list (
 ALTER TABLE city_list ADD INDEX idx_name(name);
 
 CREATE TABLE preferred_city (
-    id int　AUTO_INCREMENT,
+    id int AUTO_INCREMENT,
     name varchar(255) COLLATE utf8_general_ci,
     country varchar(10),
     priority int,
     PRIMARY KEY (id)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
+
+CREATE TABLE translation (
+    id int AUTO_INCREMENT,
+    src varchar(255) COLLATE utf8_general_ci,
+    dst varchar(255) COLLATE utf8_general_ci,
+    PRIMARY KEY (id),
+    KEY idx_src (src)
+) CHARACTER SET utf8 COLLATE utf8_bin;
+
 
 
 
@@ -93,8 +102,11 @@ INSERT INTO country_city VALUES ('北マリアナ諸島','北マリアナ諸島�
 
 
 INSERT INTO poi_city (name, countryCode, cityName) VALUES ('エッフェル塔','FR', 'パリ');
+INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイアガラの滝','CA', 'ナイアガラフォールズ', 200);
+INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイアガラの滝','US', 'ナイアガラフォールズ', 100);
 
 
+INSERT INTO translation (src, dst) VALUES ('ナイアガラフォールズ', 'Niagara Falls');
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;
 
 
