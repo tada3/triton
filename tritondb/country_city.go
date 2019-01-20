@@ -10,15 +10,16 @@ import (
 const (
 	selectByNameSql            = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
 	selectByNameSql2           = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
-	selectByCodeSql            = "SELECT cityName from country_city WHERE countryCode = ?"
+	sqlSelectCountryCity1      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry > 0"
 	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ? AND isCountry > 0"
 )
 
 var (
-	stmtByName            *sql.Stmt
-	stmtByCode            *sql.Stmt
-	stmtCountryNameByCode *sql.Stmt
-	stmtByName2           *sql.Stmt
+	stmtByName             *sql.Stmt
+	stmtByCode             *sql.Stmt
+	stmtCountryNameByCode  *sql.Stmt
+	stmtByName2            *sql.Stmt
+	stmtSelectCountryCity1 *sql.Stmt
 )
 
 func CountryName2City(cn string) (string, bool, error) {
@@ -68,34 +69,10 @@ func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	return cityInfo, true
 }
 
-func CountryCode2City(code string) (string, bool, error) {
-	if stmtByCode == nil {
+func Country2City(code string) (*model.CityInfo, bool, error) {
+	if stmtSelectCountryCity1 == nil {
 		var pErr error
-		stmtByCode, pErr = getDbClient().PrepareStmt(selectByCodeSql)
-		if pErr != nil {
-			return "", false, pErr
-		}
-	}
-
-	var city string
-	err := stmtByCode.QueryRow(code).Scan(&city)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Not Found
-			return "", false, nil
-		}
-		stmtByCode.Close()
-		stmtByCode = nil
-		return "", false, err
-	}
-
-	return city, true, nil
-}
-
-func CountryCode2City2(code string) (*model.CityInfo, bool, error) {
-	if stmtByCode == nil {
-		var pErr error
-		stmtByCode, pErr = getDbClient().PrepareStmt(selectByCodeSql)
+		stmtSelectCountryCity1, pErr = getDbClient().PrepareStmt(sqlSelectCountryCity1)
 		if pErr != nil {
 			return nil, false, pErr
 		}
@@ -103,14 +80,14 @@ func CountryCode2City2(code string) (*model.CityInfo, bool, error) {
 
 	cityInfo := &model.CityInfo{CountryCode: code}
 	var city string
-	err := stmtByCode.QueryRow(code).Scan(&city)
+	err := stmtSelectCountryCity1.QueryRow(code).Scan(&city)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Not Found
 			return nil, false, nil
 		}
-		stmtByCode.Close()
-		stmtByCode = nil
+		stmtSelectCountryCity1.Close()
+		stmtSelectCountryCity1 = nil
 		return nil, false, err
 	}
 	cityInfo.CityName = city
