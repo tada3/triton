@@ -285,6 +285,28 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo
 	return nil, countryExists
 }
 
+// getCityFromPoiSlots checks poi type slots and populates the passed CityInfo.
+// Second return value represents weather poi type slots exists or not.
+func getCityFromPoiSlots(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) (*model.CityInfo, bool) {
+	fmt.Println("XXX check poi")
+	poi := protocol.GetStringSlot(slots, "poi_snt")
+	if poi == "" {
+
+		return cityInfo, false
+	}
+
+	fmt.Println("XXX poi", poi)
+
+	cityInfo, found, err := tritondb.Poi2City(poi, cityInfo)
+	if err != nil {
+		fmt.Println("ERROR!", err.Error())
+	}
+	if !found {
+		fmt.Printf("WARN: POI not found: %s\n", poi)
+	}
+	return cityInfo, true
+}
+
 func getCityFromCitySlot3(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) *model.CityInfo {
 	if cityInfo == nil {
 		cityInfo = &model.CityInfo{}
@@ -319,42 +341,6 @@ func getCityFromCitySlot3(slots map[string]protocol.CEKSlot, cityInfo *model.Cit
 	return cityInfo
 }
 
-/**
-func getCityFromPoiSlot(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) *model.CityInfo {
-	if cityInfo == nil {
-		cityInfo = &model.CityInfo{}
-	}
-
-	var poiName string
-
-	poiName = protocol.GetStringSlot(slots, "poi_snt")
-	if poiName != "" {
-		cityInfo.CityName = cityName
-		return cityInfo
-	}
-
-	cityName = protocol.GetStringSlot(slots, "city_snt")
-	if cityName != "" {
-		cityInfo.CityName = cityName
-		return cityInfo
-	}
-
-	cityName = protocol.GetStringSlot(slots, "city_jp")
-	if cityName != "" {
-		if strings.HasSuffix(cityName, "市") {
-			cityName = strings.TrimRight(cityName, "市")
-		}
-		cityInfo.CityName = cityName
-		if cityInfo.CountryCode == "" {
-			cityInfo.CountryCode = "JP"
-		}
-		return cityInfo
-	}
-
-	return cityInfo
-}
-**/
-
 func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	intent := req.Request.Intent
 	slots := intent.Slots
@@ -363,6 +349,12 @@ func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 		return nil
 	}
 	fmt.Printf("city00: %v\n", cityInfo)
+
+	cityInfo, poiExists := getCityFromPoiSlots(slots, cityInfo)
+	if poiExists && cityInfo.CityName == "" {
+		return nil
+	}
+
 	return getCityFromCitySlot3(slots, cityInfo)
 }
 
