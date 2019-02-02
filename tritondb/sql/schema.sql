@@ -18,6 +18,8 @@ CREATE TABLE preferred_city (
     PRIMARY KEY (id)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
+
+
 CREATE TABLE translation (
     id int AUTO_INCREMENT,
     src varchar(255) COLLATE utf8_general_ci,
@@ -142,4 +144,8 @@ INSERT INTO preferred_city VALUES (3872395, 'San Antonio', 'CL', 100);
 INSERT INTO preferred_city VALUES (1832909, 'Young', 'KR', 100);
 INSERT INTO preferred_city VALUES (4726206, 'San antonio', 'US', 110);
 INSERT INTO preferred_city VALUES (3169070, 'Rome', 'IT', 100);
+INSERT INTO preferred_city VALUES (5368361, 'ロサンゼルス', 'US', 100);
+
+
+
 6174041 | Victoria | CA

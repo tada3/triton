@@ -176,33 +176,6 @@ func handleSugoine(req protocol.CEKRequest, userID string) protocol.CEKResponse 
 	return protocol.MakeCEKResponse(p)
 }
 
-func getCityFromCitySlot2(req protocol.CEKRequest) *model.CityInfo {
-	intent := req.Request.Intent
-	slots := intent.Slots
-	cityInfo := &model.CityInfo{}
-
-	cityInfo.CityName = protocol.GetStringSlot(slots, "city")
-	if cityInfo.CityName != "" {
-		return cityInfo
-	}
-
-	cityInfo.CityName = protocol.GetStringSlot(slots, "city_snt")
-	if cityInfo.CityName != "" {
-		return cityInfo
-	}
-
-	cityInfo.CityName = protocol.GetStringSlot(slots, "city_jp")
-	if cityInfo.CityName != "" {
-		if strings.HasSuffix(cityInfo.CityName, "市") {
-			cityInfo.CityName = strings.TrimRight(cityInfo.CityName, "市")
-		}
-		cityInfo.CountryCode = "JP"
-		return cityInfo
-	}
-
-	return nil
-}
-
 // getCityFromCountrySlot3 checks country type slots and create CityInfo with it.
 // Second return value represents weather country type slots exists or not.
 func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo, bool) {
