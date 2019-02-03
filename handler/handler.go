@@ -146,7 +146,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 				fmt.Printf("CountryName is not found: %s\n", city.CountryCode)
 			}
 		}
-		if countryName != "" {
+		if countryName != "" && countryName != city.CityName {
 			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, cw.Weather, cw.Temp)
 		} else {
 			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.Temp)
