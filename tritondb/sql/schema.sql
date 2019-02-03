@@ -101,6 +101,11 @@ INSERT INTO country_city VALUES ('サハリン','サハリン州',NULL,'ユジ�
 INSERT INTO country_city VALUES ('バリ','バリ島','ID','デンパサール', 0);
 INSERT INTO country_city VALUES ('サイパン','サイパン島','MP','サイパン', 0);
 INSERT INTO country_city VALUES ('北マリアナ諸島','北マリアナ諸島自治連邦区','MP','サイパン', 1);
+INSERT INTO country_city VALUES ('北極','北極','XX','北極', 1);
+INSERT INTO country_city VALUES ('南極','南極','AQ','北極', 1);
+
+
+
 
 
 INSERT INTO poi_city (name, countryCode, cityName) VALUES ('エッフェル塔','FR', 'パリ');

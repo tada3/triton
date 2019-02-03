@@ -40,6 +40,7 @@ const (
 	Tomete
 	Arigato
 	Sugoine
+	NorthPole
 )
 
 var (
@@ -101,6 +102,7 @@ func init() {
 
 	messageMap2[Sugoine] = []string{"もったいないお言葉ありがとうございます。", "えっ、そんな{[1000]}てへ。", "ありがとう。"}
 
+	messageMap2[NorthPole] = []string{"現在の%sの天気はめちゃくちゃ寒く、気温はすごい低いでしょう。", "えっ、%sに行くんですか？", "%sですか？寒いのは間違いないと思いますが詳しいことはわかりません。"}
 }
 
 // Assume messageMap[t] always exists
