@@ -12,3 +12,8 @@ type CityInfo struct {
 	CityNameEN  string
 	CityID      int64
 }
+
+func (a *CityInfo) Clone() *CityInfo {
+	copy := *a
+	return &copy
+}

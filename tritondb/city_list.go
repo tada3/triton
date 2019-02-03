@@ -27,7 +27,7 @@ var (
 	stmtC2NC *sql.Stmt
 )
 
-func getCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
+func GetCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
 	var err error
 	if stmtP2 == nil {
 		stmtP2, err = getDbClient().PrepareStmt(selectPreferredCitySQL2)
@@ -51,7 +51,7 @@ func getCityIDFromPreferredCity(cityName, countryCode string) (int64, bool) {
 	return id, true
 }
 
-func getCityIDFromPreferredCityNoCountry(cityName string) (int64, string, bool) {
+func GetCityIDFromPreferredCityNoCountry(cityName string) (int64, string, bool) {
 	var err error
 	if stmtP2NC == nil {
 		stmtP2NC, err = getDbClient().PrepareStmt(selectPreferredCityNoCountrySQL)
@@ -126,12 +126,12 @@ func getCityIDFromCityListNoCountry(cityName string) (int64, string, bool) {
 
 }
 
-// GetCityID2 get city ID for the specified city name from DB.
+// Do not need to return countryCode?
 func GetCityID2(city *model.CityInfo) (int64, string, bool) {
 
 	if city.CountryCode != "" {
 		// By cityName and countryCode
-		id, found := getCityIDFromPreferredCity(city.CityNameEN, city.CountryCode)
+		id, found := GetCityIDFromPreferredCity(city.CityNameEN, city.CountryCode)
 		if found {
 			return id, city.CountryCode, true
 		}
@@ -141,7 +141,7 @@ func GetCityID2(city *model.CityInfo) (int64, string, bool) {
 		}
 	} else {
 		// By cityName only
-		id, code, found := getCityIDFromPreferredCityNoCountry(city.CityNameEN)
+		id, code, found := GetCityIDFromPreferredCityNoCountry(city.CityNameEN)
 		if found {
 			return id, code, true
 		}

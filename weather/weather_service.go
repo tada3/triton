@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tada3/triton/redis"
+	"github.com/tada3/triton/translation"
 	"github.com/tada3/triton/tritondb"
 	"github.com/tada3/triton/weather/model"
 	"github.com/tada3/triton/weather/owm"
@@ -75,39 +76,91 @@ func GetCurrentWeather2(city *model.CityInfo) (*model.CurrentWeather, error) {
 	}
 }
 
-func GetCurrentWeather(cityName string) (*model.CurrentWeather, error) {
-	var cw *model.CurrentWeather
-	cw, ok := checkCache(cityName)
-	if ok {
-		if cw == nil {
-			fmt.Printf("LOG Cach2 Hit, but no weather data: %s\n", cityName)
-			return nil, nil
-		}
-		fmt.Printf("LOG Cache2 Hit: %s\n", cityName)
-		return cw, nil
-	}
-	fmt.Printf("LOG Cache2 Miss: %s\n", cityName)
-
-	cityID, found, err := tritondb.GetCityID(cityName)
+func getCityIDOrCityNameEN(city *model.CityInfo) (*model.CityInfo, error) {
+	// 1. preferred_city
+	city, found, err := getCityIDFromPreferredCity(city)
 	if err != nil {
-		// ignore error hrere
-		fmt.Printf("LOG DB error: %s\n", err.Error())
-		found = false
+		// ignore
+		fmt.Printf("ERROR getCityIDFromPreferredCity() failed: %+v\n", err)
+	} else if found {
+		return city, nil
 	}
-	var err2 error
-	if !found {
-		// use cityEn as it is
-		cw, err2 = owmc.GetCurrentWeatherByName(cityName)
+
+	// 2. Translate (CityNameEN)
+	if city.CityNameEN == "" {
+		var ename string
+		ename, err = translation.Translate(city.CityName)
+		if err != nil {
+			// fmt.Println("ERROR Translate() failed: %+v", err)
+			//msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+			//return getErrorResponse(msg)
+			return city, err
+		}
+		city.CityNameEN = ename
+	}
+
+	// 3. city_list
+	return getCityIDFromCityList(city)
+}
+
+func getCityIDFromPreferredCity(city *model.CityInfo) (*model.CityInfo, bool, error) {
+	if city.CityName == "" {
+		return city, false, nil
+	}
+	if city.CountryCode != "" {
+		id, found := tritondb.GetCityIDFromPreferredCity(city.CityName, city.CountryCode)
+		if found {
+			city.CityID = id
+			return city, true, nil
+		}
 	} else {
-		// use cityID
-		fmt.Printf("cityID: %d\n", cityID)
-		cw, err2 = owmc.GetCurrentWeatherByID(cityID)
+		id, code, found := tritondb.GetCityIDFromPreferredCityNoCountry(city.CityName)
+		if found {
+			city.CityID = id
+			city.CountryCode = code
+			return city, true, nil
+		}
 	}
-	if err2 != nil {
-		return nil, err2
+	return city, false, nil
+}
+
+func getCityIDFromCityList(city *model.CityInfo) (*model.CityInfo, error) {
+	cityID, countryCode, found := tritondb.GetCityID2(city)
+	if found {
+		city.CityID = cityID
+		if city.CountryCode == "" {
+			city.CountryCode = countryCode
+		}
+		return city, nil
 	}
-	// Note that setCache() is called even when cw is nil.
-	setCache(cityName, cw)
+	return city, nil
+}
+
+func GetCurrentWeather3(city *model.CityInfo) (*model.CurrentWeather, error) {
+	// 1. Get CityID or Translate
+	city, err := getCityIDOrCityNameEN(city)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Get Weather from OWM
+	var cw *model.CurrentWeather
+	if city.CityID != 0 {
+		// 2-1. Use cityID
+		fmt.Printf("INFO cityID: %d\n", city.CityID)
+		cw, err = owmc.GetCurrentWeatherByID(city.CityID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// 2-2 Use CityName and CountryCpde
+		fmt.Printf("WARN cityID not found: %v\n", *city)
+		cw, err = owmc.GetCurrentWeatherByName2(city.CityNameEN, city.CountryCode)
+		if err != nil {
+			return nil, err
+		}
+	}
+	cw.CountryCode = city.CountryCode
 	return cw, nil
 }
 
@@ -139,8 +192,8 @@ func checkCache2(city *model.CityInfo) (*model.CurrentWeather, bool) {
 	return cw, true
 }
 
-func checkCache(cityName string) (*model.CurrentWeather, bool) {
-	v, ok := redis.Get(getRedisKey(cityName))
+func GetCurrentWeatherFromCache(city *model.CityInfo) (*model.CurrentWeather, bool) {
+	v, ok := redis.Get(getRedisKey2(city))
 	if !ok {
 		return nil, false
 	}
@@ -157,14 +210,14 @@ func checkCache(cityName string) (*model.CurrentWeather, bool) {
 	return cw, true
 }
 
-func setCache(cityName string, cw *model.CurrentWeather) {
+func SetCurrentWeatherToCache(city *model.CityInfo, cw *model.CurrentWeather) {
 	b, err := json.Marshal(cw)
 	if err != nil {
 		fmt.Printf("LOG Marshal failed: %s\n", err.Error())
 		return
 	}
 	v := string(b)
-	redis.Set(getRedisKey(cityName), v, cacheTimeout)
+	redis.Set(getRedisKey2(city), v, cacheTimeout)
 }
 
 func setCache2(city *model.CityInfo, cw *model.CurrentWeather) {

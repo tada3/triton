@@ -10,8 +10,6 @@ import (
 	"github.com/tada3/triton/weather"
 	"github.com/tada3/triton/weather/model"
 
-	"github.com/tada3/triton/translation"
-
 	"github.com/tada3/triton/game"
 	"github.com/tada3/triton/protocol"
 
@@ -107,35 +105,49 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	// 0. Get City
 	city := genCityInfoFromSlots(req)
-	if city == nil || (city.CityName == "" && city.CityNameEN == "") {
+	if city == nil || city.CityName == "" {
 		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
 	}
-	fmt.Printf("city0: %v\n", city)
+	fmt.Printf("city00: %v\n", city)
 
-	// 1. Translation
-	if city.CityNameEN == "" {
+	// 1. Check cache
+	cityInput := city.Clone()
+	cw, fff := weather.GetCurrentWeatherFromCache(cityInput)
+	if !fff {
+		// city = applyPreference(city)
+		fmt.Printf("city0: %v\n", city)
+
+		// 1. Translation
+		/**
+		if city.CityNameEN == "" && city.CityID == 0 {
+			var err error
+			city.CityNameEN, err = translation.Translate(city.CityName)
+			if err != nil {
+				fmt.Println("ERROR!", err)
+				msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+				return getErrorResponse(msg)
+			}
+			fmt.Printf("city1: %v\n", city)
+		}
+		**/
+
+		// 2. Get weather
 		var err error
-		city.CityNameEN, err = translation.Translate(city.CityName)
+		cw, err = weather.GetCurrentWeather3(city)
 		if err != nil {
-			fmt.Println("ERROR!", err)
-			msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
+			fmt.Println("Error!", err.Error())
+			msg := "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
 			return getErrorResponse(msg)
 		}
-		fmt.Printf("city1: %v\n", city)
+
+		// Set cache
+		weather.SetCurrentWeatherToCache(cityInput, cw)
 	}
 
-	// 2. Get weather
-	weather, err := weather.GetCurrentWeather2(city)
-	if err != nil {
-		fmt.Println("Error!", err.Error())
-		msg := "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
-		return getErrorResponse(msg)
-	}
-
-	if weather != nil {
+	if cw != nil {
 		countryName := ""
 		if city.CountryCode != "" && city.CountryCode != "HK" && city.CountryCode != "JP" {
 			cn, found := tritondb.CountryCode2CountryName(city.CountryCode)
@@ -146,14 +158,15 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 			}
 		}
 		if countryName != "" {
-			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, weather.Weather, weather.Temp)
+			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, cw.Weather, cw.Temp)
 		} else {
-			msg = game.GetMessage(game.CurrentWeather, city.CityName, weather.Weather, weather.Temp)
+			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.Temp)
 		}
 	} else {
 		fmt.Printf("Weather for %v is not found.\n", city)
 		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
 	}
+
 	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
@@ -217,6 +230,25 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo
 
 	countryExists = false
 	return nil, countryExists
+}
+
+func applyPreference(city *model.CityInfo) *model.CityInfo {
+	if city.CityName == "" {
+		return city
+	}
+	if city.CountryCode != "" {
+		id, found := tritondb.GetCityIDFromPreferredCity(city.CityName, city.CountryCode)
+		if found {
+			city.CityID = id
+		}
+	} else {
+		id, code, found := tritondb.GetCityIDFromPreferredCityNoCountry(city.CityName)
+		if found {
+			city.CityID = id
+			city.CountryCode = code
+		}
+	}
+	return city
 }
 
 // getCityFromPoiSlots checks poi type slots and populates the passed CityInfo.
