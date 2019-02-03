@@ -111,29 +111,13 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
 	}
-	fmt.Printf("city00: %v\n", city)
+	fmt.Printf("INFO city0: %v\n", city)
 
 	// 1. Check cache
 	cityInput := city.Clone()
 	cw, fff := weather.GetCurrentWeatherFromCache(cityInput)
 	if !fff {
-		// city = applyPreference(city)
-		fmt.Printf("city0: %v\n", city)
-
-		// 1. Translation
-		/**
-		if city.CityNameEN == "" && city.CityID == 0 {
-			var err error
-			city.CityNameEN, err = translation.Translate(city.CityName)
-			if err != nil {
-				fmt.Println("ERROR!", err)
-				msg := "ごめんなさい、システムの調子が良くないようです。しばらくしてからもう一度お試しください。"
-				return getErrorResponse(msg)
-			}
-			fmt.Printf("city1: %v\n", city)
-		}
-		**/
-
+		fmt.Println("INFO Cache miss: %v\n", cityInput)
 		// 2. Get weather
 		var err error
 		cw, err = weather.GetCurrentWeather3(city)
@@ -143,14 +127,15 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 			return getErrorResponse(msg)
 		}
 
-		// Set cache
+		// 3. Set cache
 		weather.SetCurrentWeatherToCache(cityInput, cw)
 	}
 
+	// 4. Generate message
 	if cw != nil {
 		countryName := ""
-		if city.CountryCode != "" && city.CountryCode != "HK" && city.CountryCode != "JP" {
-			cn, found := tritondb.CountryCode2CountryName(city.CountryCode)
+		if cw.CountryCode != "" && cw.CountryCode != "HK" && cw.CountryCode != "JP" {
+			cn, found := tritondb.CountryCode2CountryName(cw.CountryCode)
 			if found {
 				countryName = cn
 			} else {
@@ -167,6 +152,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
 	}
 
+	// 5. Make response
 	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
@@ -314,7 +300,6 @@ func genCityInfoFromSlots(req protocol.CEKRequest) *model.CityInfo {
 	if countryExists && cityInfo == nil {
 		return nil
 	}
-	fmt.Printf("city00: %v\n", cityInfo)
 
 	cityInfo, poiExists := getCityFromPoiSlots(slots, cityInfo)
 	if poiExists {

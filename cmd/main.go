@@ -13,7 +13,7 @@ const (
 )
 
 func main() {
-	log.Println("You won't get lost if you take the road to the left and bear to the left at every crossroad...")
+	log.Println("Oni ha soto!")
 
 	log.Printf("Listen on port %d\n", port)
 

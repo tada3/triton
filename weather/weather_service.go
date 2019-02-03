@@ -143,11 +143,12 @@ func GetCurrentWeather3(city *model.CityInfo) (*model.CurrentWeather, error) {
 		return nil, err
 	}
 
+	fmt.Printf("INFO city1: %v\n", city)
+
 	// 2. Get Weather from OWM
 	var cw *model.CurrentWeather
 	if city.CityID != 0 {
 		// 2-1. Use cityID
-		fmt.Printf("INFO cityID: %d\n", city.CityID)
 		cw, err = owmc.GetCurrentWeatherByID(city.CityID)
 		if err != nil {
 			return nil, err
