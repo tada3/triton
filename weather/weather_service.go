@@ -249,7 +249,7 @@ func getRedisKey2(city *model.CityInfo) string {
 	if key1 == "" {
 		key1 = "NONE"
 	}
-	key2 := city.CityNameEN
+	key2 := city.CityName
 	return fmt.Sprintf(keyFmt, key1, key2)
 }
 
