@@ -57,6 +57,8 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 			response = handleArigato(req, userId)
 		} else if intentName == "Sugoine" {
 			response = handleSugoine(req, userId)
+		} else if intentName == "Doita" {
+			response = handleDoita(req, userId)
 		} else if intentName == "Retry" {
 			response = handleStartOver(req, userId)
 		} else {
@@ -175,6 +177,15 @@ func handleArigato(req protocol.CEKRequest, userID string) protocol.CEKResponse 
 
 func handleSugoine(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 	msg := game.GetMessage2(game.Sugoine)
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleDoita(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2Random(game.Doita, 0.85)
+	if msg == "" {
+		msg = game.GetOsusumeMessage()
+	}
 	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }

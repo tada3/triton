@@ -40,6 +40,8 @@ const (
 	Tomete
 	Arigato
 	Sugoine
+	Doita
+	Osusume
 	NorthPole
 )
 
@@ -47,6 +49,7 @@ var (
 	messageMap  map[messageType]string
 	messageMap2 map[messageType][]string
 	rnd         *rand.Rand
+	osusumeList []string
 )
 
 func init() {
@@ -102,7 +105,13 @@ func init() {
 
 	messageMap2[Sugoine] = []string{"もったいないお言葉ありがとうございます。", "えっ、そんな{[1000]}てへ。", "ありがとう。"}
 
+	messageMap2[Doita] = []string{"もっとお役に立てるよう頑張ります。", "やさしいんですね。", "これからも頑張りますね。"}
+
 	messageMap2[NorthPole] = []string{"どうなんでしょうね、%sは。", "現在の%sの天気は不明、気温はめっちゃ低いでしょう。", "えっ、%sに行くんですか？", "%sですか？寒いのは間違いないと思いますが詳しいことはわかりません。"}
+
+	messageMap2[Osusume] = []string{"%sの天気でも聞いて見ませんか？", "%sの天気なんかどうでしょう？", "では、%sの天気はいかがですか？"}
+
+	osusumeList = []string{"ニュージーランド", "スペイン", "カナダ", "マレーシア", "ドバイ", "モナコ", "タヒチ"}
 }
 
 // Assume messageMap[t] always exists
@@ -126,6 +135,7 @@ func GetMessage2(t messageType, a ...interface{}) string {
 
 func GetMessage2Random(t messageType, p float64, a ...interface{}) string {
 	r := rnd.Float64()
+	fmt.Printf("XXX r = %f\n", r)
 	if r >= p {
 		return ""
 	}
@@ -136,4 +146,10 @@ func GetMessage2Random(t messageType, p float64, a ...interface{}) string {
 	i := rnd.Intn(len(ss))
 	s := ss[i]
 	return fmt.Sprintf(s, a...)
+}
+
+func GetOsusumeMessage() string {
+	i := rnd.Intn(len(osusumeList))
+	osusume := osusumeList[i]
+	return GetMessage2(Osusume, osusume)
 }
