@@ -222,25 +222,6 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo
 	return nil, countryExists
 }
 
-func applyPreference(city *model.CityInfo) *model.CityInfo {
-	if city.CityName == "" {
-		return city
-	}
-	if city.CountryCode != "" {
-		id, found := tritondb.GetCityIDFromPreferredCity(city.CityName, city.CountryCode)
-		if found {
-			city.CityID = id
-		}
-	} else {
-		id, code, found := tritondb.GetCityIDFromPreferredCityNoCountry(city.CityName)
-		if found {
-			city.CityID = id
-			city.CountryCode = code
-		}
-	}
-	return city
-}
-
 // getCityFromPoiSlots checks poi type slots and populates the passed CityInfo.
 // Second return value represents weather poi type slots exists or not.
 func getCityFromPoiSlots(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) (*model.CityInfo, bool) {
