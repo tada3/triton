@@ -191,6 +191,8 @@ func handleQuestion(req protocol.CEKRequest, userID string) protocol.CEKResponse
 	var msg string
 	if qitem == "煙霧" {
 		msg = game.GetMessage(game.Enmu)
+	} else if qitem == "もや" {
+		msg = game.GetMessage(game.Moya)
 	} else {
 		if qitem == "" {
 			msg = game.GetMessage2(game.NoCity)
