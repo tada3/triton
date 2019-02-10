@@ -155,6 +155,7 @@ INSERT INTO preferred_city VALUES (5368361, 'ロサンゼルス', 'US', 100);
 INSERT INTO preferred_city VALUES (5391811, 'サンディエゴ', 'US', 100);
 INSERT INTO preferred_city VALUES (5391959, 'サンフランシスコ', 'US', 100);
 INSERT INTO preferred_city VALUES (4140963, 'ワシントン', 'US', 100);
+INSERT INTO preferred_city VALUES (3128760, 'バルセロナ', 'ES', 100);
 
 
 
