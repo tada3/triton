@@ -114,10 +114,13 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
-	} else if city.CityName == "北極" || city.CityName == "南極" {
-		msg = game.GetMessage2(game.NorthPole, city.CityName)
-		p = protocol.MakeCEKResponsePayload(msg, false)
-		return protocol.MakeCEKResponse(p)
+	} else {
+		var found bool
+		msg, found = game.GetMessageForSpecialCity(city.CityName)
+		if found {
+			p = protocol.MakeCEKResponsePayload(msg, false)
+			return protocol.MakeCEKResponse(p)
+		}
 	}
 	fmt.Printf("INFO city0: %v\n", city)
 

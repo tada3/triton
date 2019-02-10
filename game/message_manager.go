@@ -37,6 +37,7 @@ const (
 	CurrentWeather2NC
 	Enmu
 	Moya
+	Europe
 
 	NoCity
 	WeatherNotFound
@@ -54,7 +55,7 @@ var (
 	messageMap2   map[messageType][]string
 	rnd           *rand.Rand
 	osusumeList   []string
-	specialCities []string
+	specialCities map[string]bool
 )
 
 func init() {
@@ -102,6 +103,7 @@ func init() {
 
 	messageMap[Enmu] = "煙霧とは目に見えない乾いた微粒子が大気中に浮遊していて、視界が悪くなっている現象です。発生源は、地面から舞い上がったちりや砂ぼこり、火事による煙、工場や自動車からのばい煙などさまざまです。PM2.5などの有害物質を含むこともあります。"
 	messageMap[Moya] = "もやとは気温が下がった時に、空気中の水蒸気が細かい水滴に変わったことにより視界が悪くなっている状態です。霧と似ていますが、霧よりも薄いもののことを言います。"
+	messageMap2[Europe] = []string{"ファイナルカウントダウンは名曲ですね。", "私も一度は行ってみたいですね。", "ヨーロッパと言ってもいささかひろうござんす。"}
 
 	messageMap2[WeatherNotFound] = []string{"ごめんなさい、%sの天気はわかりません。", "すいません、%sの天気は知らないんです。", "え、%sですか。申し訳ありませんがそれは無理です。", "%sはちょっと。ごめんなさい。"}
 
@@ -122,6 +124,8 @@ func init() {
 	messageMap2[UnknownQItem] = []string{"%sですかー、ちょっとわかわからないみたいです。調べておきますね。", "ごめんなさい、%sはちょっと。勉強しておきます。", "えーっと、%sですか？ごめんなさい、よくわかりません。"}
 
 	osusumeList = []string{"ニュージーランド", "スペイン", "カナダ", "マレーシア", "ドバイ", "モナコ", "タヒチ"}
+
+	specialCities = map[string]bool{"北極": true, "南極": true, "ヨーロッパ": true}
 }
 
 // Assume messageMap[t] always exists
@@ -162,4 +166,18 @@ func GetOsusumeMessage() string {
 	i := rnd.Intn(len(osusumeList))
 	osusume := osusumeList[i]
 	return GetMessage2(Osusume, osusume)
+}
+
+func GetMessageForSpecialCity(city string) (string, bool) {
+	if !specialCities[city] {
+		return "", false
+	}
+
+	var msg string
+	if city == "北極" || city == "南極" {
+		msg = GetMessage2(NorthPole, city)
+	} else {
+		msg = GetMessage2(Europe)
+	}
+	return msg, true
 }

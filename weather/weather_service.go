@@ -161,7 +161,9 @@ func GetCurrentWeather3(city *model.CityInfo) (*model.CurrentWeather, error) {
 			return nil, err
 		}
 	}
-	cw.CountryCode = city.CountryCode
+	if cw != nil {
+		cw.CountryCode = city.CountryCode
+	}
 	return cw, nil
 }
 
