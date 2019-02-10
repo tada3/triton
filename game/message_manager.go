@@ -35,6 +35,8 @@ const (
 	CurrentWeather
 	CurrentWeather2
 	CurrentWeather2NC
+	Enmu
+
 	NoCity
 	WeatherNotFound
 	Tomete
@@ -43,13 +45,15 @@ const (
 	Doita
 	Osusume
 	NorthPole
+	UnknownQItem
 )
 
 var (
-	messageMap  map[messageType]string
-	messageMap2 map[messageType][]string
-	rnd         *rand.Rand
-	osusumeList []string
+	messageMap    map[messageType]string
+	messageMap2   map[messageType][]string
+	rnd           *rand.Rand
+	osusumeList   []string
+	specialCities []string
 )
 
 func init() {
@@ -95,6 +99,8 @@ func init() {
 	messageMap[CurrentWeather2] = "現在の%s、%sの天気は%s、気温は%d度です。"
 	messageMap[CurrentWeather2NC] = "現在の%sの天気は%s、気温は%d度です。"
 
+	messageMap[Enmu] = "煙霧とは目に見えない乾いた微粒子が大気中に浮遊していて、視界が悪くなっている現象です。発生源は、地面から舞い上がったちりや砂ぼこり、火事による煙、工場や自動車からのばい煙などさまざまです。PM2.5などの有害物質を含むこともあります。"
+
 	messageMap2[WeatherNotFound] = []string{"ごめんなさい、%sの天気はわかりません。", "すいません、%sの天気は知らないんです。", "え、%sですか。申し訳ありませんがそれは無理です。", "%sはちょっと。ごめんなさい。"}
 
 	messageMap2[NoCity] = []string{"ごめんなさい、よく聞き取れませんでした。もう一度言っていただけますか？", "残念ながらお答えできません。", "申し訳ありません。わかりませんでした。"}
@@ -110,6 +116,8 @@ func init() {
 	messageMap2[NorthPole] = []string{"どうなんでしょうね、%sは。", "現在の%sの天気は不明、気温はめっちゃ低いでしょう。", "えっ、%sに行くんですか？", "%sですか？寒いのは間違いないと思いますが詳しいことはわかりません。"}
 
 	messageMap2[Osusume] = []string{"%sの天気でも聞いて見ませんか？", "%sの天気なんかどうでしょう？", "では、%sの天気はいかがですか？"}
+
+	messageMap2[UnknownQItem] = []string{"%sですかー、ちょっとわかわからないみたいです。調べておきますね。", "ごめんなさい、%sはちょっと。勉強しておきます。", "えーっと、%sですか？ごめんなさい、よくわかりません。"}
 
 	osusumeList = []string{"ニュージーランド", "スペイン", "カナダ", "マレーシア", "ドバイ", "モナコ", "タヒチ"}
 }
