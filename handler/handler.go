@@ -61,8 +61,12 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 			response = handleDoita(req, userId)
 		} else if intentName == "Question" {
 			response = handleQuestion(req, userId)
-		} else if intentName == "Retry" {
-			response = handleStartOver(req, userId)
+		} else if intentName == "Samui" {
+			response = handleSamui(req, userId)
+		} else if intentName == "Clova.YesIntent" {
+			response = handleYesIntent(req, userId)
+		} else if intentName == "ClovaNoIntent" {
+			response = handleNoIntent(req, userId)
 		} else {
 			response = handleUnknownRequest(req)
 		}
@@ -144,7 +148,6 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	// 4. Generate message
 	if cw != nil {
-		fmt.Printf("XXXXXXX tempStr = %s\n", cw.TempStr)
 		countryName := ""
 		if cw.CountryCode != "" && cw.CountryCode != "HK" && cw.CountryCode != "JP" {
 			cn, found := tritondb.CountryCode2CountryName(cw.CountryCode)
@@ -191,7 +194,6 @@ func handleQuestion(req protocol.CEKRequest, userID string) protocol.CEKResponse
 	intent := req.Request.Intent
 	slots := intent.Slots
 	qitem := protocol.GetStringSlot(slots, "qitem")
-	fmt.Printf("XXX qitem=%s\n", qitem)
 	var msg string
 	if qitem == "煙霧" {
 		msg = game.GetMessage(game.Enmu)
@@ -204,6 +206,24 @@ func handleQuestion(req protocol.CEKRequest, userID string) protocol.CEKResponse
 			msg = game.GetMessage2(game.UnknownQItem, qitem)
 		}
 	}
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleSamui(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.Samui)
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleYesIntent(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.Yes)
+	p := protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
+func handleNoIntent(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	msg := game.GetMessage2(game.No)
 	p := protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
@@ -263,7 +283,6 @@ func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo
 // getCityFromPoiSlots checks poi type slots and populates the passed CityInfo.
 // Second return value represents weather poi type slots exists or not.
 func getCityFromPoiSlots(slots map[string]protocol.CEKSlot, cityInfo *model.CityInfo) (*model.CityInfo, bool) {
-	fmt.Println("XXX check poi")
 	poi := protocol.GetStringSlot(slots, "poi_snt")
 	if poi == "" {
 

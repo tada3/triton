@@ -184,7 +184,7 @@ func normalize(ocw *OwmCurrentWeather) (*model.CurrentWeather, error) {
 	weather = GetWeatherCondition(ocw.Weather[0].Id)
 	temp = marume(ocw.Main.Temp)
 	tempStr := getTempStr(temp)
-	fmt.Printf("XXX tempStr = %s\n", tempStr)
+	fmt.Printf(" tempStr = %s\n", tempStr)
 	return &model.CurrentWeather{
 		Weather: weather,
 		Temp:    temp,

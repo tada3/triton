@@ -105,6 +105,8 @@ INSERT INTO country_city VALUES ('北極','北極','XX','北極', 0);
 INSERT INTO country_city VALUES ('南極','南極','AQ','北極', 1);
 INSERT INTO country_city VALUES ('セブ','セブ島','PH','セブ', 0);
 INSERT INTO country_city VALUES ('ヨーロッパ','ヨーロッパ','XX','ヨーロッパ', 0);
+INSERT INTO country_city VALUES ('タスマニア','タスマニア島','AU','ホバート', 0);
+
 
 
 

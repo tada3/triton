@@ -46,8 +46,11 @@ const (
 	Sugoine
 	Doita
 	Osusume
+	Samui
 	NorthPole
 	UnknownQItem
+	Yes
+	No
 )
 
 var (
@@ -123,6 +126,12 @@ func init() {
 
 	messageMap2[UnknownQItem] = []string{"%sですかー、ちょっとわかわからないみたいです。調べておきますね。", "ごめんなさい、%sはちょっと。勉強しておきます。", "えーっと、%sですか？ごめんなさい、よくわかりません。"}
 
+	messageMap2[Samui] = []string{"そうですね。", "ですねー。", "寒いのは嫌いですか？", "行くときは厚着しないとですね。", "実は寒いのは苦手です。"}
+
+	messageMap2[Yes] = []string{"そうですか。", "へー、そうだったんですか。", "やっぱり、そうですか。", "ですよねー。"}
+
+	messageMap2[No] = []string{"あ、そうなんですか。", "へー、そうだったんですか。", "そういう人もいるんですね。", "なるほど。"}
+
 	osusumeList = []string{"ニュージーランド", "スペイン", "カナダ", "マレーシア", "ドバイ", "モナコ", "タヒチ"}
 
 	specialCities = map[string]bool{"北極": true, "南極": true, "ヨーロッパ": true}
@@ -149,7 +158,6 @@ func GetMessage2(t messageType, a ...interface{}) string {
 
 func GetMessage2Random(t messageType, p float64, a ...interface{}) string {
 	r := rnd.Float64()
-	fmt.Printf("XXX r = %f\n", r)
 	if r >= p {
 		return ""
 	}

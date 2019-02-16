@@ -81,7 +81,6 @@ func (c *OwmDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
 }
 
 func (c *OwmDbClient) Close() {
-	fmt.Printf("XXX Closing connection to DB...\n")
 	err := c.db.Close()
 	if err != nil {
 		fmt.Printf("Failed to close DB: %s\n", err.Error())
