@@ -97,8 +97,8 @@ func init() {
 	messageMap[RepromptMsg3] = "新しい迷路で遊ぶのなら、新しい迷路{[500]}、もう一度同じ迷路で遊ぶ場合は、同じ迷路{[400]}、と言って下さい。"
 	messageMap[RepromptMsg4] = "どうしますか？"
 
-	messageMap[CurrentWeather] = "現在の%sの天気は%s、気温は%d度です。"
-	messageMap[CurrentWeather2] = "現在の%s、%sの天気は%s、気温は%d度です。"
+	messageMap[CurrentWeather] = "現在の%sの天気は%s、気温は%sです。"
+	messageMap[CurrentWeather2] = "現在の%s、%sの天気は%s、気温は%sです。"
 	messageMap[CurrentWeather2NC] = "現在の%sの天気は%s、気温は%d度です。"
 
 	messageMap[Enmu] = "煙霧とは目に見えない乾いた微粒子が大気中に浮遊していて、視界が悪くなっている現象です。発生源は、地面から舞い上がったちりや砂ぼこり、火事による煙、工場や自動車からのばい煙などさまざまです。PM2.5などの有害物質を含むこともあります。"

@@ -144,6 +144,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 	// 4. Generate message
 	if cw != nil {
+		fmt.Printf("XXXXXXX tempStr = %s\n", cw.TempStr)
 		countryName := ""
 		if cw.CountryCode != "" && cw.CountryCode != "HK" && cw.CountryCode != "JP" {
 			cn, found := tritondb.CountryCode2CountryName(cw.CountryCode)
@@ -154,9 +155,9 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 			}
 		}
 		if countryName != "" && countryName != city.CityName {
-			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, cw.Weather, cw.Temp)
+			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, cw.Weather, cw.TempStr)
 		} else {
-			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.Temp)
+			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.TempStr)
 		}
 	} else {
 		fmt.Printf("Weather for %v is not found.\n", city)

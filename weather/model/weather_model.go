@@ -3,6 +3,7 @@ package model
 type CurrentWeather struct {
 	Weather     string
 	Temp        int64
+	TempStr     string
 	CountryCode string
 }
 
