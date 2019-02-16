@@ -106,6 +106,10 @@ INSERT INTO country_city VALUES ('南極','南極','AQ','北極', 1);
 INSERT INTO country_city VALUES ('セブ','セブ島','PH','セブ', 0);
 INSERT INTO country_city VALUES ('ヨーロッパ','ヨーロッパ','XX','ヨーロッパ', 0);
 INSERT INTO country_city VALUES ('タスマニア','タスマニア島','AU','ホバート', 0);
+INSERT INTO country_city VALUES ('カムチャッカ','カムチャッカ半島','RU','ペトロパブロフスクカムチャツキー', 0);
+INSERT INTO country_city VALUES ('色丹','色丹島','JP','色丹村', 0);
+INSERT INTO country_city VALUES ('歯舞','歯舞群島','JP','歯舞', 0);
+
 
 
 
@@ -117,6 +121,7 @@ INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイ�
 
 
 INSERT INTO translation (src, dst) VALUES ('ナイアガラフォールズ', 'Niagara Falls');
+INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
 INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;
 
