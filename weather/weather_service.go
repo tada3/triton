@@ -34,48 +34,6 @@ func init() {
 	}
 }
 
-func GetCurrentWeather2(city *model.CityInfo) (*model.CurrentWeather, error) {
-	// 1. Check cache
-	cw, found := checkCache2(city)
-	if found {
-		fmt.Printf("LOG Cache2 Hit: %v\n", city)
-		if cw == nil {
-			fmt.Println("LOG Cach2 cached data is nil.")
-		}
-		return cw, nil
-	}
-	fmt.Printf("LOG Cache2 Miss: %v\n", city)
-
-	// 2. Get CityID
-	cityID, countryCode, found := tritondb.GetCityID2(city)
-
-	// 3. Get Weather from OWM
-	var err error
-	if found {
-		// use cityID
-		fmt.Printf("cityID: %d, countryCode: %s\n", cityID, countryCode)
-		cw, err = owmc.GetCurrentWeatherByID(cityID)
-		if err != nil {
-			return nil, err
-		}
-
-		setCache3(city, cw, countryCode)
-		// key of the cache data should be the original city struct
-		city.CountryCode = countryCode
-		return cw, nil
-	} else {
-		// use cityID
-		fmt.Printf("cityID not found: %v\n", *city)
-		cw, err = owmc.GetCurrentWeatherByName2(city.CityNameEN, city.CountryCode)
-		if err != nil {
-			return nil, err
-		}
-
-		setCache2(city, cw)
-		return cw, nil
-	}
-}
-
 func getCityIDOrCityNameEN(city *model.CityInfo) (*model.CityInfo, error) {
 	// 1. preferred_city
 	city, found, err := getCityIDFromPreferredCity(city)
@@ -136,7 +94,7 @@ func getCityIDFromCityList(city *model.CityInfo) (*model.CityInfo, error) {
 	return city, nil
 }
 
-func GetCurrentWeather3(city *model.CityInfo) (*model.CurrentWeather, error) {
+func GetCurrentWeather(city *model.CityInfo) (*model.CurrentWeather, error) {
 	// 1. Get CityID or Translate
 	city, err := getCityIDOrCityNameEN(city)
 	if err != nil {
@@ -156,7 +114,7 @@ func GetCurrentWeather3(city *model.CityInfo) (*model.CurrentWeather, error) {
 	} else {
 		// 2-2 Use CityName and CountryCpde
 		fmt.Printf("WARN cityID not found: %v\n", *city)
-		cw, err = owmc.GetCurrentWeatherByName2(city.CityNameEN, city.CountryCode)
+		cw, err = owmc.GetCurrentWeatherByName(city.CityNameEN, city.CountryCode)
 		if err != nil {
 			return nil, err
 		}

@@ -118,30 +118,7 @@ func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, erro
 	return normalize(ocw)
 }
 
-func (c *OwmClient) GetCurrentWeatherByName(name string) (*model.CurrentWeather, error) {
-
-	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, "")
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	ocw := new(OwmCurrentWeather)
-
-	if err := decodeBody2(res, ocw); err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("YYY ocw=%+v\n", ocw)
-
-	return normalize(ocw)
-}
-
-func (c *OwmClient) GetCurrentWeatherByName2(name, code string) (*model.CurrentWeather, error) {
+func (c *OwmClient) GetCurrentWeatherByName(name, code string) (*model.CurrentWeather, error) {
 
 	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, code)
 	if err != nil {

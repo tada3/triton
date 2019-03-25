@@ -51,6 +51,8 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 		intentName := getIntentName(req)
 		if intentName == "CurrentWeather" {
 			response = handleCurrentWeather(req, userId)
+		} else if intentName == "TomorrowWeather" {
+			response = handleTomorrowWeather(req, userId)
 		} else if intentName == "Tomete" {
 			response = handleTomete(req, userId)
 		} else if intentName == "Arigato" {
@@ -107,6 +109,15 @@ func getUserId(req protocol.CEKRequest) string {
 	return user["userId"]
 }
 
+func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKResponse {
+	var msg string
+	var p protocol.CEKResponsePayload
+
+	msg = "now developing"
+	p = protocol.MakeCEKResponsePayload(msg, false)
+	return protocol.MakeCEKResponse(p)
+}
+
 func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 	var msg string
 	var p protocol.CEKResponsePayload
@@ -135,7 +146,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		fmt.Println("INFO Cache miss: %v\n", cityInput)
 		// 2. Get weather
 		var err error
-		cw, err = weather.GetCurrentWeather3(city)
+		cw, err = weather.GetCurrentWeather(city)
 		if err != nil {
 			fmt.Println("Error!", err.Error())
 			msg := "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
