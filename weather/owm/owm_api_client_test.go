@@ -2,33 +2,35 @@ package owm
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"runtime"
 	"testing"
-
-	"github.com/tada3/triton/weather"
 )
 
+const (
+	owmBaseURL string = "https://api.openweathermap.org/data/2.5/"
+	owmAPIKey  string = "e3fd219fa4ed7117d68e9fcbda3b298e"
+)
+
+func init() {
+	fmt.Println("IIIIIIIIII")
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..", "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func Test_GetCurrentWeather(t *testing.T) {
-	client, err := NewOwmClient(weather.OwmBaseURL, weather.OwmAPIKey, 5)
-	if err != nil {
-		t.Fatal(err)
-	}
-	spath := "weather"
-	cityID := "1848354"
-	req, err := client.NewGetRequest(spath, cityID)
+	client, err := NewOwmClient(owmBaseURL, owmAPIKey, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, err := client.httpClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// 1609350 Bangkok
+	weather, err := client.GetCurrentWeatherByID(1609350)
 
-	var cw OwmCurrentWeather
-
-	if err := weather.DecodeBody(res, &cw); err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Printf("Result: %v\n", cw)
+	fmt.Printf("Result: %v\n", weather)
 }

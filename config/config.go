@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/koding/multiconfig"
 )
@@ -12,6 +13,7 @@ const (
 )
 
 var (
+	homeDir        string
 	configInEffect *Config
 )
 
@@ -30,21 +32,49 @@ type Config struct {
 }
 
 func init() {
-	err := parseConfig()
+	hd, err := getHomeDir()
 	if err != nil {
 		panic(err)
 	}
+
+	homeDir = hd
+
+	err = parseConfig()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func GetHomeDir() string {
+	return homeDir
 }
 
 func GetConfig() *Config {
 	return configInEffect
 }
 
+func getHomeDir() (string, error) {
+	dir := os.Getenv("TRITON_HOME")
+	if dir != "" {
+		if exists(dir) {
+			return dir, nil
+		}
+		return "", fmt.Errorf("Invalid $TRITON_HOME: %s", dir)
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("ERROR! Failed to get the current working directory.", err)
+		wd = "???"
+	}
+	fmt.Printf("$TRITON_HOME is not defined. Use current dir (%s) as home dir.\n", wd)
+	return ".", nil
+}
+
 func parseConfig() error {
 
 	configFile := os.Getenv("TRITON_CONFIG_FILE")
 	if configFile == "" {
-		configFile = defaultConfigFile
+		configFile = filepath.Join(homeDir, defaultConfigFile)
 	}
 
 	var mc *multiconfig.DefaultLoader

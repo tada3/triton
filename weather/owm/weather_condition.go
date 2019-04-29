@@ -6,7 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
+
+	"github.com/tada3/triton/config"
 )
 
 const (
@@ -19,7 +22,10 @@ var (
 )
 
 func init() {
-	f, err := os.Open(csvFilePath)
+	homeDir := config.GetHomeDir()
+	fp := filepath.Join(homeDir, csvFilePath)
+
+	f, err := os.Open(fp)
 	if err != nil {
 		panic(err)
 	}
