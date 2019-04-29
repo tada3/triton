@@ -143,7 +143,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	cityInput := city.Clone()
 	cw, fff := weather.GetCurrentWeatherFromCache(cityInput)
 	if !fff {
-		fmt.Println("INFO Cache miss: %v\n", cityInput)
+		fmt.Printf("INFO Cache miss: %v\n", cityInput)
 		// 2. Get weather
 		var err error
 		cw, err = weather.GetCurrentWeather(city)

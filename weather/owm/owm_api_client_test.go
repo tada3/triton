@@ -14,7 +14,6 @@ const (
 )
 
 func init() {
-	fmt.Println("IIIIIIIIII")
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "..", "..")
 	err := os.Chdir(dir)
@@ -31,6 +30,24 @@ func Test_GetCurrentWeather(t *testing.T) {
 
 	// 1609350 Bangkok
 	weather, err := client.GetCurrentWeatherByID(1609350)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	fmt.Printf("Result: %v\n", weather)
+}
+
+func Test_GetWeatherForecasts(t *testing.T) {
+	client, err := NewOwmClient(owmBaseURL, owmAPIKey, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// 1848354 Yokohama
+	forecasts, err := client.GetWeatherForecastsByID(1848354)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Printf("Result: %v\n", forecasts)
 }

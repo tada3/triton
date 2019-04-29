@@ -20,7 +20,7 @@ func main() {
 	log.Println("Triton Admin Tool")
 
 	flag.Usage = func() {
-		fmt.Fprintln(os.Stderr, "Usage:\n  att [--clear] <filepath>\n")
+		fmt.Fprintln(os.Stderr, "Usage:\n  att [--clear] <filepath>")
 	}
 	flag.BoolVar(&clearFlag, "c", false, "clear existing records first")
 	flag.BoolVar(&clearFlag, "clear", false, "clear existing records first")

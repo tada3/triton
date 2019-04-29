@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	CurrentWeatherPath string = "weather"
-	tempStrFormatP     string = "%d度"
-	tempStrFormatN     string = "氷点下%d度"
+	CurrentWeatherPath  string = "weather"
+	WeatherForecastPath string = "forecast"
+	tempStrFormatP      string = "%d度"
+	tempStrFormatN      string = "氷点下%d度"
 )
 
 // OwmClient is a Client for OpenWeatherMap API
@@ -27,12 +28,21 @@ type OwmClient struct {
 }
 
 type OwmCurrentWeather struct {
-	Name    string
-	Weather []OwmWeather
-	Main    OwmMain
 	// Usually integer but string in case of 404
 	Cod     json.Number
 	Message string
+
+	Name    string
+	Weather []OwmWeather
+	Main    OwmMain
+}
+
+type OwmWeatherForecast struct {
+	Cod     json.Number
+	Message json.Number
+
+	List []OwmForecast
+	City OwmCity
 }
 
 type OwmWeather struct {
@@ -50,6 +60,18 @@ type OwmMain struct {
 	Temp_max float64
 }
 
+type OwmForecast struct {
+	Dt      int64
+	Main    OwmMain
+	Weather []OwmWeather
+}
+
+type OwmCity struct {
+	Id      int64
+	Name    string
+	Country string
+}
+
 func NewOwmClient(baseURL, apiKey string, timeout int) (*OwmClient, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -63,7 +85,7 @@ func NewOwmClient(baseURL, apiKey string, timeout int) (*OwmClient, error) {
 	}, nil
 }
 
-func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName, countryCode string) (*http.Request, error) {
+func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName, countryCode string, params map[string]string) (*http.Request, error) {
 	u := *c.baseURL
 	u.Path = path.Join(c.baseURL.Path, spath)
 
@@ -78,6 +100,9 @@ func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName, countryC
 			qParam = qParam + "," + countryCode
 		}
 		q.Set("q", qParam)
+	}
+	for k, v := range params {
+		q.Set(k, v)
 	}
 	u.RawQuery = q.Encode()
 
@@ -97,7 +122,7 @@ func (c *OwmClient) NewGetRequest(spath string, cityID int64, cityName, countryC
 // and returns it as CurrentWeather.
 func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, error) {
 
-	req, err := c.NewGetRequest(CurrentWeatherPath, id, "", "")
+	req, err := c.NewGetRequest(CurrentWeatherPath, id, "", "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -115,12 +140,14 @@ func (c *OwmClient) GetCurrentWeatherByID(id int64) (*model.CurrentWeather, erro
 
 	fmt.Printf("XXX ocw=%+v\n", ocw)
 
+	// TODO: Check city ID!!
+
 	return normalize(ocw)
 }
 
 func (c *OwmClient) GetCurrentWeatherByName(name, code string) (*model.CurrentWeather, error) {
 
-	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, code)
+	req, err := c.NewGetRequest(CurrentWeatherPath, -1, name, code, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +166,42 @@ func (c *OwmClient) GetCurrentWeatherByName(name, code string) (*model.CurrentWe
 	fmt.Printf("YYY ocw=%+v\n", ocw)
 
 	return normalize(ocw)
+}
+
+func (c *OwmClient) GetWeatherForecastsByID(id int64) ([]OwmForecast, error) {
+	params := make(map[string]string)
+	params["cnt"] = "24"
+
+	req, err := c.NewGetRequest(WeatherForecastPath, id, "", "", params)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	wf := new(OwmWeatherForecast)
+
+	if err := decodeBody2(res, wf); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("XXX wf=%+v\n", wf)
+	cod := wf.Cod.String()
+	if cod != "200" {
+		if cod == "404" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Received error response from OWM: %s, %s", cod, wf.Message.String())
+	}
+
+	if wf.City.Id != id {
+		return nil, fmt.Errorf("Invalid City ID: %d (Requested: %d)", wf.City.Id, id)
+	}
+
+	return wf.List, nil
 }
 
 func decodeBody2(resp *http.Response, out interface{}) error {
