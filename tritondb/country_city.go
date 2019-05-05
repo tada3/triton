@@ -47,6 +47,7 @@ func CountryName2City(cn string) (string, bool, error) {
 }
 
 func CountryName2City2(cn string) (*model.CityInfo, bool) {
+	fmt.Printf("XXX CountryName2City2 000 %s\n", cn)
 	var err error
 	if stmtByName2 == nil {
 		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql2)

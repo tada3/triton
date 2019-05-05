@@ -109,6 +109,9 @@ INSERT INTO country_city VALUES ('タスマニア','タスマニア島','AU','�
 INSERT INTO country_city VALUES ('カムチャッカ','カムチャッカ半島','RU','ペトロパブロフスクカムチャツキー', 0);
 INSERT INTO country_city VALUES ('色丹','色丹島','JP','色丹村', 0);
 INSERT INTO country_city VALUES ('歯舞','歯舞群島','JP','歯舞', 0);
+INSERT INTO country_city VALUES ('スリランカ','スリランカ民主社会主義共和国','LK','スリジャヤワルダナプラコッテ', 1);
+INSERT INTO country_city VALUES ('カナリア諸島','カナリア諸島自治州','ES','サンタ・クルス・デ・テネリフェ', 0);
+INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','	ハンガロア', 0);
 
 
 
@@ -123,6 +126,10 @@ INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイ�
 INSERT INTO translation (src, dst) VALUES ('ナイアガラフォールズ', 'Niagara Falls');
 INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
 INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
+INSERT INTO translation (src, dst) VALUES ('スリジャヤワルダナプラコッテ', 'Sri Jayewardenepura Kotte');
+
+
+
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;
 
 
@@ -169,3 +176,6 @@ INSERT INTO preferred_city VALUES (4887398, 'シカゴ', 'US', 100);
 
 
 6174041 | Victoria | CA
+SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?
+
+SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = 'カナリア諸島' OR officialName = 'カナリア諸島';

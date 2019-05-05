@@ -195,7 +195,7 @@ func (c *OwmClient) GetWeatherForecastsByID(id int64) (*OwmWeatherForecast, erro
 		return nil, err
 	}
 
-	fmt.Printf("XXX wf=%+v\n", wf)
+	// fmt.Printf("XXX wf=%+v\n", wf)
 	cod := wf.Cod.String()
 	if cod != "200" {
 		if cod == "404" {
@@ -231,7 +231,7 @@ func (c *OwmClient) GetWeatherForecastsByName(name, code string) (*OwmWeatherFor
 		return nil, err
 	}
 
-	fmt.Printf("XXX wf=%+v\n", wf)
+	// fmt.Printf("XXX wf=%+v\n", wf)
 	cod := wf.Cod.String()
 	if cod != "200" {
 		if cod == "404" {
