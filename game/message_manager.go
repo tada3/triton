@@ -50,6 +50,7 @@ const (
 	Osusume
 	Samui
 	NorthPole
+	NorthPoleT
 	UnknownQItem
 	Yes
 	No
@@ -127,6 +128,8 @@ func init() {
 
 	messageMap2[NorthPole] = []string{"どうなんでしょうね、%sは。", "現在の%sの天気は不明、気温はめっちゃ低いでしょう。", "えっ、%sに行くんですか？", "%sですか？寒いのは間違いないと思いますが詳しいことはわかりません。"}
 
+	messageMap2[NorthPoleT] = []string{"どうでしょうね、%sは。", "明日の%sの天気は不明、気温はめっちゃ低いでしょう。", "へー、%sに行くんですか。", "%sですか？寒いですよ。詳しいことはわかりませんが。"}
+
 	messageMap2[Osusume] = []string{"%sの天気でも聞いて見ませんか？", "%sの天気なんかどうでしょう？", "では、%sの天気はいかがですか？"}
 
 	messageMap2[UnknownQItem] = []string{"%sですかー、ちょっとわかわからないみたいです。調べておきますね。", "ごめんなさい、%sはちょっと。勉強しておきます。", "えーっと、%sですか？ごめんなさい、よくわかりません。"}
@@ -188,7 +191,7 @@ func GetMessageForSpecialCity(city string) (string, bool) {
 
 	var msg string
 	if city == "北極" || city == "南極" {
-		msg = GetMessage2(NorthPole, city)
+		msg = GetMessage2(NorthPoleT, city)
 	} else {
 		msg = GetMessage2(Europe)
 	}

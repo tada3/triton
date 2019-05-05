@@ -302,7 +302,6 @@ func handleDoita(req protocol.CEKRequest, userID string) protocol.CEKResponse {
 // getCityFromCountrySlot3 checks country type slots and create CityInfo with it.
 // Second return value represents weather country type slots exists or not.
 func getCityFromCountrySlot3(slots map[string]protocol.CEKSlot) (*model.CityInfo, bool) {
-	fmt.Println("AAAAAAAAAAAAAA")
 	countryExists := true
 	country := protocol.GetStringSlot(slots, "country")
 	if country != "" {

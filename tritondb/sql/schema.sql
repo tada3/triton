@@ -111,7 +111,8 @@ INSERT INTO country_city VALUES ('色丹','色丹島','JP','色丹村', 0);
 INSERT INTO country_city VALUES ('歯舞','歯舞群島','JP','歯舞', 0);
 INSERT INTO country_city VALUES ('スリランカ','スリランカ民主社会主義共和国','LK','スリジャヤワルダナプラコッテ', 1);
 INSERT INTO country_city VALUES ('カナリア諸島','カナリア諸島自治州','ES','サンタ・クルス・デ・テネリフェ', 0);
-INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','	ハンガロア', 0);
+INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','ハンガロア', 0);
+
 
 
 
@@ -121,6 +122,7 @@ INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','	�
 INSERT INTO poi_city (name, countryCode, cityName) VALUES ('エッフェル塔','FR', 'パリ');
 INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイアガラの滝','CA', 'ナイアガラフォールズ', 200);
 INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('ナイアガラの滝','US', 'ナイアガラフォールズ', 100);
+INSERT INTO poi_city (name, countryCode, cityName, precedence) VALUES ('グランドキャニオン','US', 'グランドキャニオン', 100);
 
 
 INSERT INTO translation (src, dst) VALUES ('ナイアガラフォールズ', 'Niagara Falls');
