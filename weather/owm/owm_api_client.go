@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tada3/triton/weather/model"
@@ -70,6 +71,12 @@ type OwmCity struct {
 	Id      int64
 	Name    string
 	Country string
+	Coord   OwmCoord
+}
+
+type OwmCoord struct {
+	Lat float64
+	Lon float64
 }
 
 func NewOwmClient(baseURL, apiKey string, timeout int) (*OwmClient, error) {
@@ -168,7 +175,7 @@ func (c *OwmClient) GetCurrentWeatherByName(name, code string) (*model.CurrentWe
 	return normalize(ocw)
 }
 
-func (c *OwmClient) GetWeatherForecastsByID(id int64) ([]OwmForecast, error) {
+func (c *OwmClient) GetWeatherForecastsByID(id int64) (*OwmWeatherForecast, error) {
 	params := make(map[string]string)
 	params["cnt"] = "24"
 
@@ -201,7 +208,48 @@ func (c *OwmClient) GetWeatherForecastsByID(id int64) ([]OwmForecast, error) {
 		return nil, fmt.Errorf("Invalid City ID: %d (Requested: %d)", wf.City.Id, id)
 	}
 
-	return wf.List, nil
+	return wf, nil
+}
+
+func (c *OwmClient) GetWeatherForecastsByName(name, code string) (*OwmWeatherForecast, error) {
+	params := make(map[string]string)
+	params["cnt"] = "24"
+
+	req, err := c.NewGetRequest(WeatherForecastPath, -1, name, code, params)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	wf := new(OwmWeatherForecast)
+
+	if err := decodeBody2(res, wf); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("XXX wf=%+v\n", wf)
+	cod := wf.Cod.String()
+	if cod != "200" {
+		if cod == "404" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("Received error response from OWM: %s, %s", cod, wf.Message.String())
+	}
+
+	if strings.EqualFold(code, wf.City.Country) {
+		return nil, fmt.Errorf("Wrong Country code: %s (Requested: %s)", wf.City.Country, code)
+	}
+
+	if !strings.Contains(name, wf.City.Name) && !strings.Contains(wf.City.Name, name) {
+		// This condition maybe too strong. Just log it.
+		fmt.Printf("WARN: Wrong City name?: %s (Requested: %s)", wf.City.Name, name)
+	}
+
+	return wf, nil
 }
 
 func decodeBody2(resp *http.Response, out interface{}) error {

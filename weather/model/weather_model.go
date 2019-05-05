@@ -7,6 +7,13 @@ type CurrentWeather struct {
 	CountryCode string
 }
 
+type TomorrowWeather struct {
+	Weather string
+	TempMax int64
+	TempMin int64
+	Day     int
+}
+
 type CityInfo struct {
 	CountryCode string
 	CityName    string

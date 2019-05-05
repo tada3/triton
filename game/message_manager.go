@@ -35,6 +35,8 @@ const (
 	CurrentWeather
 	CurrentWeather2
 	CurrentWeather2NC
+	TomorrowWeather
+	TomorrowWeather2
 	Enmu
 	Moya
 	Europe
@@ -103,6 +105,9 @@ func init() {
 	messageMap[CurrentWeather] = "現在の%sの天気は%s、気温は%sです。"
 	messageMap[CurrentWeather2] = "現在の%s、%sの天気は%s、気温は%sです。"
 	messageMap[CurrentWeather2NC] = "現在の%sの天気は%s、気温は%d度です。"
+
+	messageMap[TomorrowWeather] = "明日%sの%sの天気は%s、気温は%sとなるでしょう。"
+	messageMap[TomorrowWeather2] = "明日%sの%s、%sの天気は%s、気温は%sとなるでしょう。"
 
 	messageMap[Enmu] = "煙霧とは目に見えない乾いた微粒子が大気中に浮遊していて、視界が悪くなっている現象です。発生源は、地面から舞い上がったちりや砂ぼこり、火事による煙、工場や自動車からのばい煙などさまざまです。PM2.5などの有害物質を含むこともあります。"
 	messageMap[Moya] = "もやとは気温が下がった時に、空気中の水蒸気が細かい水滴に変わったことにより視界が悪くなっている状態です。霧と似ていますが、霧よりも薄いもののことを言います。"

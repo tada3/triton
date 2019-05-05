@@ -9,6 +9,7 @@ import (
 
 	"github.com/tada3/triton/weather"
 	"github.com/tada3/triton/weather/model"
+	"github.com/tada3/triton/weather/util"
 
 	"github.com/tada3/triton/game"
 	"github.com/tada3/triton/protocol"
@@ -113,7 +114,57 @@ func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKR
 	var msg string
 	var p protocol.CEKResponsePayload
 
-	msg = "now developing"
+	// 0. Get city
+	city := genCityInfoFromSlots(req)
+	if city == nil || city.CityName == "" {
+		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
+		msg = game.GetMessage2(game.NoCity)
+		p = protocol.MakeCEKResponsePayload(msg, false)
+		return protocol.MakeCEKResponse(p)
+	}
+	var found bool
+	msg, found = game.GetMessageForSpecialCity(city.CityName)
+	if found {
+		p = protocol.MakeCEKResponsePayload(msg, false)
+		return protocol.MakeCEKResponse(p)
+	}
+	fmt.Printf("INFO city0: %v\n", city)
+
+	// 1. Check cache
+
+	// 2. Get tomorrow weather
+	tw, err := weather.GetTomorrowWeather(city)
+	if err != nil {
+		fmt.Println("Error!", err.Error())
+		msg = "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
+		return getErrorResponse(msg)
+	}
+	if tw == nil {
+		fmt.Printf("Weather for %v is not found.\n", city)
+		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
+	}
+
+	// 3. Generate message
+	countryName := ""
+	if city.CountryCode != "" && city.CountryCode != "HK" && city.CountryCode != "JP" {
+		cn, found := tritondb.CountryCode2CountryName(city.CountryCode)
+		if found {
+			countryName = cn
+		} else {
+			fmt.Printf("CountryName is not found: %s\n", city.CountryCode)
+		}
+	}
+	if countryName != "" && countryName != city.CityName {
+		msg = game.GetMessage(game.TomorrowWeather2, util.GetDayStr(tw.Day),
+			countryName, city.CityName, tw.Weather,
+			util.GetTempRangeStr(tw.TempMin, tw.TempMax))
+	} else {
+		msg = game.GetMessage(game.TomorrowWeather, util.GetDayStr(tw.Day),
+			city.CityName, tw.Weather,
+			util.GetTempRangeStr(tw.TempMin, tw.TempMax))
+	}
+
+	// 5. Make response
 	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
 }
@@ -129,14 +180,14 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
-	} else {
-		var found bool
-		msg, found = game.GetMessageForSpecialCity(city.CityName)
-		if found {
-			p = protocol.MakeCEKResponsePayload(msg, false)
-			return protocol.MakeCEKResponse(p)
-		}
 	}
+	var found bool
+	msg, found = game.GetMessageForSpecialCity(city.CityName)
+	if found {
+		p = protocol.MakeCEKResponsePayload(msg, false)
+		return protocol.MakeCEKResponse(p)
+	}
+
 	fmt.Printf("INFO city0: %v\n", city)
 
 	// 1. Check cache
@@ -149,7 +200,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		cw, err = weather.GetCurrentWeather(city)
 		if err != nil {
 			fmt.Println("Error!", err.Error())
-			msg := "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
+			msg = "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
 			return getErrorResponse(msg)
 		}
 

@@ -164,6 +164,8 @@ INSERT INTO preferred_city VALUES (5391959, 'サンフランシスコ', 'US', 10
 INSERT INTO preferred_city VALUES (4140963, 'ワシントン', 'US', 100);
 INSERT INTO preferred_city VALUES (3128760, 'バルセロナ', 'ES', 100);
 
+INSERT INTO preferred_city VALUES (4887398, 'シカゴ', 'US', 100);
+
 
 
 6174041 | Victoria | CA

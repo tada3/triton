@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/tada3/triton/redis"
+	"github.com/tada3/triton/timezone"
 	"github.com/tada3/triton/translation"
 	"github.com/tada3/triton/tritondb"
 	"github.com/tada3/triton/weather/model"
 	"github.com/tada3/triton/weather/owm"
+	"github.com/tada3/triton/weather/util"
 )
 
 const (
@@ -84,6 +86,7 @@ func getCityIDFromPreferredCity(city *model.CityInfo) (*model.CityInfo, bool, er
 
 func getCityIDFromCityList(city *model.CityInfo) (*model.CityInfo, error) {
 	cityID, countryCode, found := tritondb.GetCityID2(city)
+	fmt.Printf("INFO Result of GetCityID2(%s): %s, %s, %t\n", cityID, countryCode, found)
 	if found {
 		city.CityID = cityID
 		if city.CountryCode == "" {
@@ -123,6 +126,69 @@ func GetCurrentWeather(city *model.CityInfo) (*model.CurrentWeather, error) {
 		cw.CountryCode = city.CountryCode
 	}
 	return cw, nil
+}
+
+func GetTomorrowWeather(city *model.CityInfo) (*model.TomorrowWeather, error) {
+	// 1. Get CityID or Translate
+	city, err := getCityIDOrCityNameEN(city)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("INFO city1: %v\n", city)
+
+	// 2. Get Weather from OWM
+	var wf *owm.OwmWeatherForecast
+	if city.CityID != 0 {
+		// 2-1. Use cityID
+		wf, err = owmc.GetWeatherForecastsByID(city.CityID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// 2-2 Use CityName and CountryCpde
+		fmt.Printf("WARN cityID not found: %v\n", *city)
+		wf, err = owmc.GetWeatherForecastsByName(city.CityNameEN, city.CountryCode)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 3. Get time of Tommorow 12:00
+	now := time.Now().Unix()
+	tnTimestamp, tnTime := timezone.GetTomorrowNoon(wf.City.Coord.Lon, wf.City.Coord.Lat, now)
+	fmt.Printf("DEBUG (now, tnTs, tnTime) = (%d, %d, %v)\n", now, tnTimestamp, tnTime)
+
+	// 4. Pick up the nearest forecast
+	var tnForecast owm.OwmForecast
+	delta := tnTimestamp
+
+	for _, f := range wf.List {
+		delta1 := tnTimestamp - f.Dt
+		if delta1 < 0 {
+			delta1 *= -1
+		}
+		if delta1 >= delta {
+			break
+		}
+		tnForecast = f
+		delta = delta1
+	}
+	fmt.Printf("INFO tnForecast: %v\n", tnForecast)
+	return createTomorrowWeather(tnForecast, tnTime), nil
+}
+
+func createTomorrowWeather(of owm.OwmForecast, t *time.Time) *model.TomorrowWeather {
+	weather := owm.GetWeatherCondition(of.Weather[0].Id)
+	tempMax := util.MarumeTemp(of.Main.Temp_max)
+	tempMin := util.MarumeTemp(of.Main.Temp_min)
+	day := t.Day()
+
+	return &model.TomorrowWeather{
+		Weather: weather,
+		TempMax: tempMax,
+		TempMin: tempMin,
+		Day:     day,
+	}
 }
 
 // DecodeBody decode JSON response body to the specified struct.

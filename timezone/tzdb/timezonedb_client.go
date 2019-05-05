@@ -19,7 +19,7 @@ type TzdbClient struct {
 type TzdbTimezone struct {
 	Status    string
 	GmtOffset int64
-	Dst       string
+	Dst       string // Daylight Saving Time or not
 }
 
 func NewTzdbClient(baseURL, apiKey string, timeout int) (*TzdbClient, error) {
@@ -36,7 +36,7 @@ func NewTzdbClient(baseURL, apiKey string, timeout int) (*TzdbClient, error) {
 	}, nil
 }
 
-// GetTimezone gets jisa of the specified location at the specified time
+// GetTimezone gets jisa of the specified location at the specified time t
 // from timezonedb API. t is a unix timestamp in seconds.
 func (c *TzdbClient) GetTimezone(lon float64, lat float64, t int64) (int64, error) {
 	req, err := c.NewRequest("v2.1/get-time-zone", lon, lat, t)
