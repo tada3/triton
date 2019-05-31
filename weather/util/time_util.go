@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	dayFormat = "％d日"
+	dayFormat = "%d日"
 )
 
 func ut2Time(t int64, offset int64, dst int64) time.Time {
