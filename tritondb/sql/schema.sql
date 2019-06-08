@@ -37,7 +37,7 @@ CREATE TABLE country_city (
   countryCode varchar(10) DEFAULT NULL,
   cityName varchar(255) DEFAULT NULL,
   isCountry int DEFAULT 0,
-  PRIMARY KEY (countryName)
+  PRIMARY KEY (countryName, cityName)
 ) CHARACTER SET utf8 COLLATE utf8_bin;
 
 CREATE TABLE country_code (
@@ -88,6 +88,9 @@ INSERT INTO country_city VALUES ('セントーサ島','セントーサ島',NULL,
 INSERT INTO country_city VALUES ('北海道','北海道',NULL,'札幌');
 
 INSERT INTO country_city VALUES ('アフリカ','アフリカ',NULL,'ナイロビ');
+INSERT INTO country_city VALUES ('アフリカ','アフリカ','EG','カイロ', 0);
+INSERT INTO country_city VALUES ('アフリカ','アフリカ','ZA','ケープタウン', 0);
+
 INSERT INTO country_city VALUES ('ワイキキ','ワイキキ',NULL,'ホノルル');
 
 
@@ -113,7 +116,10 @@ INSERT INTO country_city VALUES ('スリランカ','スリランカ民主社会�
 INSERT INTO country_city VALUES ('カナリア諸島','カナリア諸島自治州','ES','サンタ・クルス・デ・テネリフェ', 0);
 INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','ハンガロア', 0);
 
+INSERT INTO country_city VALUES ('アメリカ', 'アメリカ合衆国','US','ニューヨーク',1);
+INSERT INTO country_city VALUES ('アメリカ', 'アメリカ合衆国','US','サンフランシスコ',1);
 
+ALTER TABLE country_city DROP PRIMARY KEY, ADD PRIMARY KEY (countryName, cityName);
 
 
 
