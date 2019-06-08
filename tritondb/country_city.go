@@ -11,6 +11,7 @@ const (
 	selectByNameSql            = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
 	selectByNameSql2           = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
 	sqlSelectCountryCity1      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry > 0"
+	sqlSelectCountryCity2      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry <> 0 ORDER BY RAND() LIMIT 1"
 	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ? AND isCountry > 0"
 )
 
@@ -72,7 +73,7 @@ func CountryName2City2(cn string) (*model.CityInfo, bool) {
 func Country2City(code string) (*model.CityInfo, bool, error) {
 	if stmtSelectCountryCity1 == nil {
 		var pErr error
-		stmtSelectCountryCity1, pErr = getDbClient().PrepareStmt(sqlSelectCountryCity1)
+		stmtSelectCountryCity1, pErr = getDbClient().PrepareStmt(sqlSelectCountryCity2)
 		if pErr != nil {
 			return nil, false, pErr
 		}
