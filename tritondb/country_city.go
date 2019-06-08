@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	selectByNameSql            = "SELECT cityName from country_city WHERE countryName = ? OR officialName = ?"
 	selectByNameSql2           = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
+	selectByNameSql3           = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ? ORDER BY RAND() LIMIT 1"
 	sqlSelectCountryCity1      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry > 0"
 	sqlSelectCountryCity2      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry <> 0 ORDER BY RAND() LIMIT 1"
 	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ? AND isCountry > 0"
@@ -23,36 +23,12 @@ var (
 	stmtSelectCountryCity1 *sql.Stmt
 )
 
-func CountryName2City(cn string) (string, bool, error) {
-	if stmtByName == nil {
-		var pErr error
-		stmtByName, pErr = getDbClient().PrepareStmt(selectByNameSql)
-		if pErr != nil {
-			return "", false, pErr
-		}
-	}
-
-	var city string
-	err := stmtByName.QueryRow(cn, cn).Scan(&city)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Not Found
-			return "", false, nil
-		}
-		stmtByName.Close()
-		stmtByName = nil
-		return "", false, err
-	}
-
-	return city, true, nil
-}
-
 func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	var err error
 	if stmtByName2 == nil {
-		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql2)
+		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql3)
 		if err != nil {
-			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectByNameSql2)
+			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectByNameSql3)
 			return nil, false
 		}
 	}
