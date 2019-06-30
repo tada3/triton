@@ -18,6 +18,7 @@ func Test_LoggingLevel(t *testing.T) {
 	writer := new(bytes.Buffer)
 	l := NewLogger("hoge", INFO)
 	l.SetOutput(writer)
+	defer l.Close()
 
 	l.Debug("abc")
 	result := writer.String()
@@ -55,4 +56,38 @@ func Test_LoggingLevel(t *testing.T) {
 	if !matched {
 		t.Errorf("Wrong output: expected: %s, actual: %s", seikai[3], result)
 	}
+}
+
+func Test_OutputConfig(t *testing.T) {
+	conf1 := OutputConfig{
+		outputType: STDOUT,
+	}
+	conf2 := FileOutputConfig{
+		OutputConfig: OutputConfig{
+			outputType: FILE,
+		},
+		filename: "./test.log",
+	}
+
+	config := []interface{}{conf1, conf2}
+
+	l := NewLogger("hoge", INFO)
+	err := l.SetOutputByOutputConfig(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close()
+
+	l.Info("hello!")
+}
+
+func Test_OutputConfigEmtpty(t *testing.T) {
+	config := []interface{}{}
+
+	l := NewLogger("hoge", INFO)
+	err := l.SetOutputByOutputConfig(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l.Close()
 }
