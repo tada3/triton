@@ -2,6 +2,7 @@ triton
 *.crt
 *.key
 *.swp
+*.log
 .DS_Store
 .gopath/
 .idea
