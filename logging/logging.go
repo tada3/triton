@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 )
 
 const (
@@ -34,12 +35,13 @@ const (
 
 // Logger is a wrapper of the standard log.Logger.
 type Logger struct {
-	name     string
-	delegate *log.Logger
-	minLevel LogLevel
-	files    []*os.File
-	queue    chan string
-	done     chan bool
+	name           string
+	delegate       *log.Logger
+	minLevel       LogLevel
+	files          []*os.File
+	nonFileWriters []io.Writer
+	queue          chan string
+	done           chan bool
 }
 
 // Entry is used to customize some properties of Logger, while sharing the other
@@ -103,23 +105,28 @@ func (l *Logger) SetOutput(w io.Writer) {
 // SetOutputByOutputConfig sets the output by the slice of OuputConfig.
 func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 	writers := make([]io.Writer, 0)
+	nonFileWriters := make([]io.Writer, 0)
+	fileWriters := make([]*os.File, 0)
 	for _, obj := range configs {
 		switch config := obj.(type) {
 		case OutputConfig:
 			writers = append(writers, os.Stdout)
+			nonFileWriters = append(nonFileWriters, os.Stdout)
 		case FileOutputConfig:
 			file, err := os.OpenFile(config.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 			if err != nil {
 				return err
 			}
-			l.files = append(l.files, file)
 			writers = append(writers, file)
+			fileWriters = append(fileWriters, file)
 		default:
 			fmt.Fprintf(os.Stderr, "LOG[%s] Invalid config type: %T, %[2]v\n", l.name, config)
 		}
 	}
 	writer := io.MultiWriter(writers...)
 	l.SetOutput(writer)
+	l.nonFileWriters = nonFileWriters
+	l.files = fileWriters
 	return nil
 }
 
@@ -130,7 +137,7 @@ func (l *Logger) Close() {
 		fmt.Printf("LOG[%s] Closing file[%s]..\n", l.name, file.Name())
 		err := file.Close()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Cannot close the file: %s, %v", file.Name(), err)
+			fmt.Fprintf(os.Stderr, "Cannot close the file[%s]: %v", file.Name(), err)
 		}
 	}
 	fmt.Printf("LOG[%s] Closing queue..\n", l.name)
@@ -138,6 +145,66 @@ func (l *Logger) Close() {
 	<-l.done
 	close(l.done)
 	fmt.Printf("LOG[%s] Closed.\n", l.name)
+}
+
+// Rotate performs daily file rotation.
+func (l *Logger) Rotate() {
+	if len(l.files) == 0 {
+		return
+	}
+
+	suffix := time.Now().AddDate(0, 0, -1).Format("2016-01-02")
+
+	// Update Logger.files
+	newfiles := make([]*os.File, 0)
+	for _, f := range l.files {
+		newfile, err := rotateFile(f, suffix)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to rotate the file[%s]: %v\n", f.Name(), err)
+			continue
+		}
+		newfiles = append(newfiles, newfile)
+	}
+	l.files = newfiles
+
+	// Update output
+	writers := make([]io.Writer, 0)
+	for _, file := range l.files {
+		writers = append(writers, file)
+	}
+	for _, nonfile := range l.nonFileWriters {
+		writers = append(writers, nonfile)
+	}
+	multiWriter := io.MultiWriter(writers...)
+	l.SetOutput(multiWriter)
+}
+
+func rotateFile(f *os.File, suffix string) (*os.File, error) {
+	// 1. Close current file
+	err := f.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Rename current file
+	filename := f.Name()
+	fileinfo, err := os.Stat(filename)
+	if err != nil {
+		return nil, err
+	}
+	if fileinfo.Size() > 0 {
+		err = os.Rename(filename, filename+"."+suffix)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 3. Open new file
+	newfile, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+	return newfile, nil
 }
 
 // Debug writes the DEBUG level log.
