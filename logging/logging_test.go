@@ -10,9 +10,9 @@ import (
 func Test_LoggingLevel(t *testing.T) {
 	seikai := [...]string{
 		"",
-		`^hoge: [\d/]+ [\d:\.]+ [\w\.:]+ \[INF\] xyz$`,
-		`^hoge: [\d/]+ [\d:\.]+ [\w\.:]+ \[WRN\] xyz$`,
-		`^hoge: [\d/]+ [\d:\.]+ [\w\.:]+ \[ERR\] xyz$`,
+		`^[\d/]+ [\d:\.]+ \[INF\] xyz$`,
+		`^[\d/]+ [\d:\.]+ \[WRN\] xyz$`,
+		`^[\d/]+ [\d:\.]+ \[ERR\] xyz$`,
 	}
 
 	writer := new(bytes.Buffer)
@@ -90,4 +90,24 @@ func Test_OutputConfigEmtpty(t *testing.T) {
 		t.Fatal(err)
 	}
 	l.Close()
+}
+
+func Test_Entry(t *testing.T) {
+	writer := new(bytes.Buffer)
+	l := NewLogger("hoge", DEBUG)
+	l.SetOutput(writer)
+
+	e := l.NewEntry("test")
+	x := 32
+	e.Debug("x=%d", x)
+
+	l.Close()
+
+	result := writer.String()
+	result = strings.TrimSpace(result)
+	seikai := `^[\d/]+ [\d:\.]+ \[DBG\] x=32$`
+	re := regexp.MustCompile(seikai)
+	if !re.MatchString(result) {
+		t.Errorf("Wrong output: expected: %s, actual: %s", seikai, result)
+	}
 }

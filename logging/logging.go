@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+const (
+	queueSize = 10
+)
+
 //LogLevel represents the importance of log message.
 type LogLevel int
 
@@ -16,6 +20,7 @@ const (
 	INFO
 	WARN
 	ERROR
+	NONE
 )
 
 // OutputType is type of output.
@@ -29,9 +34,20 @@ const (
 
 // Logger is a wrapper of the standard log.Logger.
 type Logger struct {
-	logger   *log.Logger
+	name     string
+	delegate *log.Logger
 	minLevel LogLevel
 	files    []*os.File
+	queue    chan string
+	done     chan bool
+}
+
+// Entry is used to customize some properties of Logger, while sharing the other
+// properties with other Entry instances.
+type Entry struct {
+	name     string
+	logger   *Logger
+	minLevel LogLevel
 }
 
 // OutputConfig is a configuration parameters for output.
@@ -45,19 +61,43 @@ type FileOutputConfig struct {
 	filename string
 }
 
-// NewLogger create a new instance of TLogger.
-func NewLogger(p string, l LogLevel) *Logger {
-	tlogger := Logger{
-		logger:   log.New(os.Stdout, p+": ", log.Ldate|log.Lmicroseconds|log.Lshortfile),
-		minLevel: l,
+// NewLogger create a new instance of Logger.
+func NewLogger(name string, level LogLevel) *Logger {
+	logger := Logger{
+		name:     name,
+		delegate: log.New(os.Stdout, "", log.Ldate|log.Lmicroseconds),
+		minLevel: level,
 		files:    make([]*os.File, 0),
+		queue:    make(chan string, queueSize),
+		done:     make(chan bool),
 	}
-	return &tlogger
+	go func() {
+		for {
+			msg, ok := <-logger.queue
+			if !ok {
+				fmt.Printf("LOG[%s] queue has been closed.\n", logger.name)
+				break
+			}
+			logger.delegate.Output(0, msg)
+			fmt.Printf("LOG[%s] queue: %d\n", logger.name, len(logger.queue))
+		}
+		logger.done <- true
+	}()
+	return &logger
+}
+
+// NewEntry creates a new instance of Entry
+func (l *Logger) NewEntry(name string) *Entry {
+	return &Entry{
+		name:     name,
+		logger:   l,
+		minLevel: NONE,
+	}
 }
 
 // SetOutput sets the output by os.Writer.
 func (l *Logger) SetOutput(w io.Writer) {
-	l.logger.SetOutput(w)
+	l.delegate.SetOutput(w)
 }
 
 // SetOutputByOutputConfig sets the output by the slice of OuputConfig.
@@ -75,7 +115,7 @@ func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 			l.files = append(l.files, file)
 			writers = append(writers, file)
 		default:
-			fmt.Fprintf(os.Stderr, "Invalid config type: %T, %[1]v\n", config)
+			fmt.Fprintf(os.Stderr, "LOG[%s] Invalid config type: %T, %[2]v\n", l.name, config)
 		}
 	}
 	writer := io.MultiWriter(writers...)
@@ -85,13 +125,19 @@ func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 
 // Close closes the logger.
 func (l *Logger) Close() {
+	fmt.Printf("LOG[%s] Closing logger..\n", l.name)
 	for _, file := range l.files {
-		fmt.Printf("Closing file[%s]..\n", file.Name())
+		fmt.Printf("LOG[%s] Closing file[%s]..\n", l.name, file.Name())
 		err := file.Close()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Cannot close the file: %s, %v", file.Name(), err)
 		}
 	}
+	fmt.Printf("LOG[%s] Closing queue..\n", l.name)
+	close(l.queue)
+	<-l.done
+	close(l.done)
+	fmt.Printf("LOG[%s] Closed.\n", l.name)
 }
 
 // Debug writes the DEBUG level log.
@@ -99,7 +145,7 @@ func (l *Logger) Debug(format string, a ...interface{}) {
 	if l.minLevel > DEBUG {
 		return
 	}
-	l.logger.Printf("[DBG] "+format, a...)
+	l.delegate.Printf("[DBG] "+format, a...)
 }
 
 // Info writes the INFO level log.
@@ -107,7 +153,7 @@ func (l *Logger) Info(format string, a ...interface{}) {
 	if l.minLevel > INFO {
 		return
 	}
-	l.logger.Printf("[INF] "+format, a...)
+	l.delegate.Printf("[INF] "+format, a...)
 }
 
 // Warn writes hte WARN level log.
@@ -115,10 +161,27 @@ func (l *Logger) Warn(format string, a ...interface{}) {
 	if l.minLevel > WARN {
 		return
 	}
-	l.logger.Printf("[WRN] "+format, a...)
+	l.delegate.Printf("[WRN] "+format, a...)
 }
 
 // Error writes the ERROR level log.
 func (l *Logger) Error(format string, a ...interface{}) {
-	l.logger.Printf("[ERR] "+format, a...)
+	l.delegate.Printf("[ERR] "+format, a...)
+}
+
+// Debug writes the DEBUG level log.
+func (e *Entry) Debug(format string, a ...interface{}) {
+	if e.shouldSkip(DEBUG) {
+		return
+	}
+
+	msg := fmt.Sprintf("[DBG] "+format, a...)
+	e.logger.queue <- msg
+}
+
+func (e *Entry) shouldSkip(target LogLevel) bool {
+	if e.minLevel == NONE {
+		return e.logger.minLevel > target
+	}
+	return e.minLevel > target
 }
