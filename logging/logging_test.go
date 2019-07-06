@@ -60,13 +60,13 @@ func Test_LoggingLevel(t *testing.T) {
 
 func Test_OutputConfig(t *testing.T) {
 	conf1 := OutputConfig{
-		outputType: STDOUT,
+		OutputType: STDOUT,
 	}
 	conf2 := FileOutputConfig{
 		OutputConfig: OutputConfig{
-			outputType: FILE,
+			OutputType: FILE,
 		},
-		filename: "./test.log",
+		Filename: "./test.log",
 	}
 
 	config := []interface{}{conf1, conf2}

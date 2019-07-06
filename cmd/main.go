@@ -2,20 +2,30 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
+
 	"net/http"
 
 	"github.com/tada3/triton/handler"
+	"github.com/tada3/triton/logging"
 )
 
 const (
 	port = 10700
 )
 
-func main() {
-	log.Println("Oni ha soto!")
+var (
+	log *logging.Entry
+)
 
-	log.Printf("Listen on port %d\n", port)
+func init() {
+	log = logging.NewEntry("main")
+}
+
+func main() {
+	log.Info("Oni ha soto!")
+
+	log.Info("Listen on port %d\n", port)
 
 	fileServer := http.FileServer(http.Dir("resources"))
 	http.Handle("/resources/", http.StripPrefix("/resources/", fileServer))
@@ -23,5 +33,8 @@ func main() {
 	http.HandleFunc("/monitor/l7check", handler.HealthCheck)
 
 	addr := fmt.Sprintf(":%d", port)
-	log.Fatalln(http.ListenAndServe(addr, nil))
+
+	err := http.ListenAndServe(addr, nil)
+	log.Error("HTTP server stopped!", err)
+	os.Exit(1)
 }

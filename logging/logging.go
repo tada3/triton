@@ -5,8 +5,16 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 )
+
+// TODO
+// 1. I want to set filter (by Entry Name, Log Level) on each Writer.
+// 2. Implement own Writer instead of using 'log' package.
+// 3. I want to use config file instead of writing initialization code
+//     such as 'l := NewLogger(...).
 
 const (
 	queueSize = 10
@@ -44,23 +52,15 @@ type Logger struct {
 	done           chan bool
 }
 
-// Entry is used to customize some properties of Logger, while sharing the other
-// properties with other Entry instances.
-type Entry struct {
-	name     string
-	logger   *Logger
-	minLevel LogLevel
-}
-
 // OutputConfig is a configuration parameters for output.
 type OutputConfig struct {
-	outputType OutputType
+	OutputType OutputType
 }
 
 // FileOutputConfig is a specialized type of OutputConfig for file.
 type FileOutputConfig struct {
 	OutputConfig
-	filename string
+	Filename string
 }
 
 // NewLogger create a new instance of Logger.
@@ -97,6 +97,10 @@ func (l *Logger) NewEntry(name string) *Entry {
 	}
 }
 
+func (l *Logger) SetLevel(level LogLevel) {
+	l.minLevel = level
+}
+
 // SetOutput sets the output by os.Writer.
 func (l *Logger) SetOutput(w io.Writer) {
 	l.delegate.SetOutput(w)
@@ -113,7 +117,11 @@ func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 			writers = append(writers, os.Stdout)
 			nonFileWriters = append(nonFileWriters, os.Stdout)
 		case FileOutputConfig:
-			file, err := os.OpenFile(config.filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+			err := checkDir(config.Filename)
+			if err != nil {
+				return err
+			}
+			file, err := os.OpenFile(config.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 			if err != nil {
 				return err
 			}
@@ -129,6 +137,8 @@ func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 	l.files = fileWriters
 	return nil
 }
+
+
 
 // Close closes the logger.
 func (l *Logger) Close() {
@@ -153,7 +163,7 @@ func (l *Logger) Rotate() {
 		return
 	}
 
-	suffix := time.Now().AddDate(0, 0, -1).Format("2016-01-02")
+	suffix := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 
 	// Update Logger.files
 	newfiles := make([]*os.File, 0)
@@ -193,6 +203,7 @@ func rotateFile(f *os.File, suffix string) (*os.File, error) {
 		return nil, err
 	}
 	if fileinfo.Size() > 0 {
+		// If newpath already exists and is not a directory, Rename replaces it.
 		err = os.Rename(filename, filename+"."+suffix)
 		if err != nil {
 			return nil, err
@@ -209,46 +220,71 @@ func rotateFile(f *os.File, suffix string) (*os.File, error) {
 
 // Debug writes the DEBUG level log.
 func (l *Logger) Debug(format string, a ...interface{}) {
-	if l.minLevel > DEBUG {
-		return
-	}
-	l.delegate.Printf("[DBG] "+format, a...)
+	l.printf(DEBUG, format, a...)
 }
 
 // Info writes the INFO level log.
 func (l *Logger) Info(format string, a ...interface{}) {
-	if l.minLevel > INFO {
-		return
-	}
-	l.delegate.Printf("[INF] "+format, a...)
+	l.printf(INFO, format, a...)
 }
 
 // Warn writes hte WARN level log.
 func (l *Logger) Warn(format string, a ...interface{}) {
-	if l.minLevel > WARN {
-		return
-	}
-	l.delegate.Printf("[WRN] "+format, a...)
+	l.printf(WARN, format, a...)
 }
 
 // Error writes the ERROR level log.
 func (l *Logger) Error(format string, a ...interface{}) {
-	l.delegate.Printf("[ERR] "+format, a...)
+	l.printf(ERROR, format, a...)
 }
 
-// Debug writes the DEBUG level log.
-func (e *Entry) Debug(format string, a ...interface{}) {
-	if e.shouldSkip(DEBUG) {
+func (l *Logger) printf(level LogLevel, format string, a ...interface{}) {
+	if l.minLevel > level {
 		return
 	}
 
-	msg := fmt.Sprintf("[DBG] "+format, a...)
-	e.logger.queue <- msg
+	l.printf1(level, format, a...)
 }
 
-func (e *Entry) shouldSkip(target LogLevel) bool {
-	if e.minLevel == NONE {
-		return e.logger.minLevel > target
+func (l *Logger) printf1(level LogLevel, format string, a ...interface{}) {
+	hasErrorArg := false
+	len := len(a)
+	if len > 0 {
+		last := a[len-1]
+		_, hasErrorArg = last.(error)
 	}
-	return e.minLevel > target
+
+	var format1 string
+	if hasErrorArg {
+		format1 = format + "\n%+v"
+	} else {
+		format1 = format
+	}
+
+	msg := fmt.Sprintf(getLogLevelLabel(level)+format1, a...)
+	l.queue <- msg
+}
+
+func getLogLevelLabel(level LogLevel) string {
+	switch level {
+	case DEBUG:
+		return "[DBG] "
+	case INFO:
+		return "[INF] "
+	case WARN:
+		return "[WRN] "
+	case ERROR:
+		return "[ERR] "
+	default:
+		panic("Invalid level: " + strconv.Itoa(int(level)))
+	}
+}
+
+func checkDir(fp string) error {
+	dir := filepath.Dir(fp)
+	if _, err := os.Stat(dir); err != nil {
+		err = os.Mkdir(dir, os.ModePerm)
+		return err
+	}
+	return nil
 }

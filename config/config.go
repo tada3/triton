@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/koding/multiconfig"
+	"github.com/tada3/triton/logging"
 )
 
 const (
@@ -38,6 +39,8 @@ func init() {
 	}
 
 	homeDir = hd
+
+	configLogging()
 
 	err = parseConfig()
 	if err != nil {
@@ -99,4 +102,24 @@ func parseConfig() error {
 func exists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
+}
+
+func configLogging() {
+	logging.SetLevel(logging.DEBUG)
+
+	conf1 := logging.OutputConfig{
+		OutputType: logging.STDOUT,
+	}
+	conf2 := logging.FileOutputConfig{
+		OutputConfig: logging.OutputConfig{
+			OutputType: logging.FILE,
+		},
+		Filename: filepath.Join(homeDir, "log", "triton.log"),
+	}
+	configs := []interface{}{conf1, conf2}
+
+	err := logging.SetOutputByOutputConfig(configs)
+	if err != nil {
+		fmt.Printf("ERROR! Failed to configure logging: %+v\n", err)
+	}
 }
