@@ -7,18 +7,23 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/tada3/triton/config"
+	"github.com/tada3/triton/logging"
 )
 
 const (
 	dataSourceNameFmt = "%s:%d"
 )
 
-var client *redis.Client
+var (
+	log    *logging.Entry
+	client *redis.Client
+)
 
 func init() {
+	log = logging.NewEntry("redis")
 	var err error
 	dsn := getDataSourceName()
-	fmt.Printf("INFO Connecting to Redis(%s)..", dsn)
+	log.Info("Connecting to Redis(%s)..", dsn)
 	client, err = newRedisClient(dsn, getPassword())
 	if err != nil {
 		panic(err)
@@ -30,7 +35,8 @@ func Get(key string) (string, bool) {
 	if err != nil {
 		if err != redis.Nil {
 			// real error
-			fmt.Printf("LOG Redis Get(%s) error: %s", key, err.Error())
+			//fmt.Printf("LOG Redis Get(%s) error: %s", key, err.Error())
+			log.Error("Redis Get(%s) failed!", key, err)
 		}
 		return "", false
 	}
@@ -40,7 +46,7 @@ func Get(key string) (string, bool) {
 func Set(k, v string, e time.Duration) {
 	err := client.Set(k, v, e).Err()
 	if err != nil {
-		fmt.Printf("LOG Redis Set(%s, %s, %d) error: %s", k, v, e, err.Error())
+		log.Error("Redis Set(%s, %s, %d) failed!", k, v, e, err)
 	}
 }
 

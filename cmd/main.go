@@ -25,7 +25,7 @@ func init() {
 func main() {
 	log.Info("Oni ha soto!")
 
-	log.Info("Listen on port %d\n", port)
+	log.Info("Listen on port %d", port)
 
 	fileServer := http.FileServer(http.Dir("resources"))
 	http.Handle("/resources/", http.StripPrefix("/resources/", fileServer))

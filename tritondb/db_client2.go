@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tada3/triton/config"
+	"github.com/tada3/triton/logging"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 )
 
 var (
+	log        *logging.Entry
 	defaultDbc *TritonDbClient
 )
 
@@ -23,6 +25,7 @@ type TritonDbClient struct {
 }
 
 func init() {
+	log = logging.NewEntry("tritondb")
 	var err error
 	defaultDbc, err = newTritonDbClient()
 	if err != nil {
@@ -41,7 +44,7 @@ func getDbClient() *TritonDbClient {
 func (c *TritonDbClient) Open() error {
 	var err error
 	dsn := getDataSourceName()
-	fmt.Printf("INFO Connecting to MySQL(%s)..\n", dsn)
+	log.Info("Connecting to MySQL(%s)..", dsn)
 	c.db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return err
@@ -77,10 +80,10 @@ func (c *TritonDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
 }
 
 func (c *TritonDbClient) Close() {
-	fmt.Printf("XXX Closing connection to DB...\n")
+	log.Info("Closing connection to DB...")
 	err := c.db.Close()
 	if err != nil {
-		fmt.Printf("Failed to close DB: %s\n", err.Error())
+		log.Error("Failed to close DB!", err)
 	}
 }
 
@@ -94,7 +97,7 @@ func (c *TritonDbClient) BeginTx() error {
 }
 
 func (c *TritonDbClient) CommitTx() error {
-	fmt.Println("Committing tx..")
+	log.Info("Committing tx..")
 	if c.tx == nil {
 		return errors.New("Transaction is not found.")
 	}
@@ -102,14 +105,14 @@ func (c *TritonDbClient) CommitTx() error {
 }
 
 func (c *TritonDbClient) RollbackTx() {
-	fmt.Println("Rollbacking tx..")
+	log.Info("Rollbacking tx..")
 	if c.tx == nil {
-		fmt.Println("Transaction is not found.")
+		log.Info("Transaction is not found.")
 		return
 	}
 	err := c.tx.Rollback()
 	if err != nil {
-		fmt.Printf("Rollback failed: %s\n", err.Error())
+		log.Error("Rollback failed!", err)
 	}
 }
 

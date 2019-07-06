@@ -29,7 +29,7 @@ func (e *Entry) printf(level LogLevel, format string, a ...interface{}) {
 	if e.shouldSkip(level) {
 		return
 	}
-	e.logger.printf1(level, format, a...)
+	e.logger.printf1(level, getEntryNameLabel(e.name)+format, a...)
 }
 
 func (e *Entry) shouldSkip(target LogLevel) bool {
@@ -37,4 +37,8 @@ func (e *Entry) shouldSkip(target LogLevel) bool {
 		return e.logger.minLevel > target
 	}
 	return e.minLevel > target
+}
+
+func getEntryNameLabel(name string) string {
+	return "[" + name + "] "
 }

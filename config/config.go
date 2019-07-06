@@ -16,6 +16,7 @@ const (
 var (
 	homeDir        string
 	configInEffect *Config
+	log            *logging.Entry
 )
 
 type Config struct {
@@ -41,6 +42,7 @@ func init() {
 	homeDir = hd
 
 	configLogging()
+	log = logging.NewEntry("config")
 
 	err = parseConfig()
 	if err != nil {
@@ -82,11 +84,13 @@ func parseConfig() error {
 
 	var mc *multiconfig.DefaultLoader
 	if exists(configFile) {
-		fmt.Printf("Parsing %s..\n", configFile)
+		//fmt.Printf("Parsing %s..\n", configFile)
+		log.Info("Parsing %s..", configFile)
 		mc = multiconfig.NewWithPath(configFile)
 
 	} else {
-		fmt.Printf("WARN %s is not found.\n", configFile)
+		//fmt.Printf("WARN %s is not found.\n", configFile)
+		log.Warn("%s is not found.", configFile)
 		mc = multiconfig.New()
 	}
 

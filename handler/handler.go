@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/tada3/triton/logging"
 	"github.com/tada3/triton/weather"
 	"github.com/tada3/triton/weather/model"
 	"github.com/tada3/triton/weather/util"
@@ -18,22 +19,25 @@ import (
 )
 
 var (
+	log        *logging.Entry
 	masterRepo *game.GameMasterRepo
 )
 
 func init() {
+	log = logging.NewEntry("handler")
 	masterRepo = game.NewGameMasterRepo()
 }
 
 func Dispatch(w http.ResponseWriter, r *http.Request) {
 	req, err := parseRequest(r)
 	if err != nil {
-		fmt.Printf("JSON decoding failed, %v\n", err.Error())
+		log.Error("JSON decoding failed!", err)
 		respondError(w, "Invalid reqeuest!")
 		return
 	}
 
 	reqType := req.Request.Type
+	log.Info("request type: %s", reqType)
 
 	userId := getUserId(req)
 
@@ -41,14 +45,11 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 
 	switch reqType {
 	case "LaunchRequest":
-		fmt.Println("LaunchRequest")
 		response = handleLaunchRequest()
 	case "SessionEndedRequest":
-		fmt.Println("SessionEndedRequest")
 		response = protocol.MakeCEKResponse(handleEndRequest())
 
 	case "IntentRequest":
-		fmt.Println("IntentRequest")
 		intentName := getIntentName(req)
 		if intentName == "CurrentWeather" {
 			response = handleCurrentWeather(req, userId)
@@ -77,7 +78,7 @@ func Dispatch(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	b, _ := json.Marshal(&response)
-	fmt.Printf("<<< %s\n", string(b))
+	log.Info("<<< %s", string(b))
 	w.Write(b)
 }
 
@@ -90,7 +91,7 @@ func parseRequest(r *http.Request) (protocol.CEKRequest, error) {
 	if err != nil {
 		return req, err
 	}
-	fmt.Printf(">>> %s\n", string(body))
+	log.Info(">>> %s", string(body))
 
 	err = json.Unmarshal(body, &req)
 	return req, err
@@ -117,7 +118,7 @@ func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKR
 	// 0. Get city
 	city := genCityInfoFromSlots(req)
 	if city == nil || city.CityName == "" {
-		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
+		log.Info("Cannot get city from slots: %+v", req.Request.Intent)
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
@@ -128,19 +129,19 @@ func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKR
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
 	}
-	fmt.Printf("INFO city0: %v\n", city)
+	log.Info("city: %v", city)
 
 	// 1. Check cache
 
 	// 2. Get tomorrow weather
 	tw, err := weather.GetTomorrowWeather(city)
 	if err != nil {
-		fmt.Println("Error!", err.Error())
+		log.Error("Error!", err)
 		msg = "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
 		return getErrorResponse(msg)
 	}
 	if tw == nil {
-		fmt.Printf("Weather for %v is not found.\n", city)
+		log.Info("Weather for %v is not found.", city)
 		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
 	}
 
@@ -151,7 +152,7 @@ func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKR
 		if found {
 			countryName = cn
 		} else {
-			fmt.Printf("CountryName is not found: %s\n", city.CountryCode)
+			log.Info("CountryName is not found: %s\n", city.CountryCode)
 		}
 	}
 	if countryName != "" && countryName != city.CityName {
@@ -176,7 +177,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	// 0. Get City
 	city := genCityInfoFromSlots(req)
 	if city == nil || city.CityName == "" {
-		fmt.Printf("LOG Cannot get city from slots: %+v", req.Request.Intent)
+		log.Info("Cannot get city from slots: %+v", req.Request.Intent)
 		msg = game.GetMessage2(game.NoCity)
 		p = protocol.MakeCEKResponsePayload(msg, false)
 		return protocol.MakeCEKResponse(p)
@@ -188,18 +189,18 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 		return protocol.MakeCEKResponse(p)
 	}
 
-	fmt.Printf("INFO city0: %v\n", city)
+	log.Info("city: %v", city)
 
 	// 1. Check cache
 	cityInput := city.Clone()
 	cw, fff := weather.GetCurrentWeatherFromCache(cityInput)
 	if !fff {
-		fmt.Printf("INFO Cache miss: %v\n", cityInput)
+		log.Info("Cache miss: %v", cityInput)
 		// 2. Get weather
 		var err error
 		cw, err = weather.GetCurrentWeather(city)
 		if err != nil {
-			fmt.Println("Error!", err.Error())
+			log.Error("Error!", err)
 			msg = "ごめんなさい、システムの調子が良くないみたいです。しばらくしてからもう一度お試しください。"
 			return getErrorResponse(msg)
 		}
@@ -216,7 +217,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 			if found {
 				countryName = cn
 			} else {
-				fmt.Printf("CountryName is not found: %s\n", city.CountryCode)
+				log.Info("CountryName is not found: %s", city.CountryCode)
 			}
 		}
 		if countryName != "" && countryName != city.CityName {
@@ -225,7 +226,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.TempStr)
 		}
 	} else {
-		fmt.Printf("Weather for %v is not found.\n", city)
+		log.Info("Weather for %v is not found.", city)
 		msg = game.GetMessage2(game.WeatherNotFound, city.CityName)
 	}
 

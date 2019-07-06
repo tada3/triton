@@ -7,6 +7,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tada3/triton/config"
+	"github.com/tada3/triton/logging"
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 )
 
 var (
+	log        *logging.Entry
 	defaultDbc *OwmDbClient
 )
 
@@ -23,6 +25,7 @@ type OwmDbClient struct {
 }
 
 func init() {
+	log = logging.NewEntry("db")
 	var err error
 	defaultDbc, err = NewOwmDbClient()
 	if err != nil {
@@ -45,7 +48,7 @@ func NewOwmDbClient() (*OwmDbClient, error) {
 func (c *OwmDbClient) Open() error {
 	var err error
 	dsn := getDataSourceName()
-	fmt.Printf("INFO Connecting to MySQL(%s)..\n", dsn)
+	log.Info("Connecting to MySQL(%s)..", dsn)
 	c.db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return err
@@ -83,7 +86,7 @@ func (c *OwmDbClient) PrepareStmtTx(stmt string) (*sql.Stmt, error) {
 func (c *OwmDbClient) Close() {
 	err := c.db.Close()
 	if err != nil {
-		fmt.Printf("Failed to close DB: %s\n", err.Error())
+		log.Error("Failed to close DB!", err)
 	}
 }
 
@@ -107,12 +110,12 @@ func (c *OwmDbClient) CommitTx() error {
 func (c *OwmDbClient) RollbackTx() {
 	fmt.Println("Rollbacking tx..")
 	if c.tx == nil {
-		fmt.Println("Transaction is not found.")
+		log.Info("Transaction is not found.")
 		return
 	}
 	err := c.tx.Rollback()
 	if err != nil {
-		fmt.Printf("Rollback failed: %s\n", err.Error())
+		log.Error("Rollback failed!", err)
 	}
 }
 

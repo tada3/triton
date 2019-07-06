@@ -138,8 +138,6 @@ func (l *Logger) SetOutputByOutputConfig(configs []interface{}) error {
 	return nil
 }
 
-
-
 // Close closes the logger.
 func (l *Logger) Close() {
 	fmt.Printf("LOG[%s] Closing logger..\n", l.name)
@@ -268,13 +266,13 @@ func (l *Logger) printf1(level LogLevel, format string, a ...interface{}) {
 func getLogLevelLabel(level LogLevel) string {
 	switch level {
 	case DEBUG:
-		return "[DBG] "
+		return "DEBUG "
 	case INFO:
-		return "[INF] "
+		return "INFO  "
 	case WARN:
-		return "[WRN] "
+		return "WARN  "
 	case ERROR:
-		return "[ERR] "
+		return "ERROR "
 	default:
 		panic("Invalid level: " + strconv.Itoa(int(level)))
 	}
