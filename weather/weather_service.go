@@ -89,8 +89,8 @@ func getCityIDFromPreferredCity(city *model.CityInfo) (*model.CityInfo, bool, er
 }
 
 func getCityIDFromCityList(city *model.CityInfo) (*model.CityInfo, error) {
-	cityID, countryCode, found := tritondb.GetCityID2(city)
-	log.Info("Result of GetCityID2(%s): %s, %s, %t", cityID, countryCode, found)
+	cityID, countryCode, found := tritondb.GetCityID(city)
+	log.Info("Result of GetCityID(%s): %s, %s, %t", cityID, countryCode, found)
 	if found {
 		city.CityID = cityID
 		if city.CountryCode == "" {
@@ -202,29 +202,9 @@ func DecodeBody(resp *http.Response, out interface{}) error {
 	return decoder.Decode(out)
 }
 
-func checkCache2(city *model.CityInfo) (*model.CurrentWeather, bool) {
-	v, ok := redis.Get(getRedisKey2(city))
-	if !ok {
-		return nil, false
-	}
-	if v == "null" {
-		// Weather was not found last time.
-		return nil, true
-	}
-	cw := &model.CurrentWeather{}
-	err := json.Unmarshal([]byte(v), cw)
-	if err != nil {
-		log.Error("Unmarshal failed!", err)
-		return nil, false
-	}
-	if city.CountryCode == "" {
-		city.CountryCode = cw.CountryCode
-	}
-	return cw, true
-}
-
+// GetCurrentWeatherFromCache gets current weather from cache without touching DB.
 func GetCurrentWeatherFromCache(city *model.CityInfo) (*model.CurrentWeather, bool) {
-	v, ok := redis.Get(getRedisKey2(city))
+	v, ok := redis.Get(getRedisKey(city))
 	if !ok {
 		return nil, false
 	}
@@ -241,6 +221,7 @@ func GetCurrentWeatherFromCache(city *model.CityInfo) (*model.CurrentWeather, bo
 	return cw, true
 }
 
+// SetCurrentWeatherToCache sets the current weather data to cache for the future query.
 func SetCurrentWeatherToCache(city *model.CityInfo, cw *model.CurrentWeather) {
 	b, err := json.Marshal(cw)
 	if err != nil {
@@ -248,41 +229,14 @@ func SetCurrentWeatherToCache(city *model.CityInfo, cw *model.CurrentWeather) {
 		return
 	}
 	v := string(b)
-	redis.Set(getRedisKey2(city), v, cacheTimeout)
+	redis.Set(getRedisKey(city), v, cacheTimeout)
 }
 
-func setCache2(city *model.CityInfo, cw *model.CurrentWeather) {
-	b, err := json.Marshal(cw)
-	if err != nil {
-		log.Error("Marshal failed!", err)
-		return
-	}
-	v := string(b)
-	redis.Set(getRedisKey2(city), v, cacheTimeout)
-}
-
-func setCache3(city *model.CityInfo, cw *model.CurrentWeather, countryCode string) {
-	if city.CountryCode == "" {
-		cw.CountryCode = countryCode
-	}
-	b, err := json.Marshal(cw)
-	if err != nil {
-		log.Error("LOG Marshal failed!", err)
-		return
-	}
-	v := string(b)
-	redis.Set(getRedisKey2(city), v, cacheTimeout)
-}
-
-func getRedisKey2(city *model.CityInfo) string {
+func getRedisKey(city *model.CityInfo) string {
 	key1 := city.CountryCode
 	if key1 == "" {
 		key1 = "NONE"
 	}
 	key2 := city.CityName
 	return fmt.Sprintf(keyFmt, key1, key2)
-}
-
-func getRedisKey(w string) string {
-	return "triton:weather:" + w
 }

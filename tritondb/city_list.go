@@ -127,7 +127,7 @@ func getCityIDFromCityListNoCountry(cityName string) (int64, string, bool) {
 }
 
 // Do not need to return countryCode?
-func GetCityID2(city *model.CityInfo) (int64, string, bool) {
+func GetCityID(city *model.CityInfo) (int64, string, bool) {
 
 	if city.CountryCode != "" {
 		// By cityName and countryCode
@@ -151,51 +151,6 @@ func GetCityID2(city *model.CityInfo) (int64, string, bool) {
 		}
 	}
 	return 0, "", false
-}
-
-// GetCityID get city ID for the specified city name from DB.
-func GetCityID(city string) (int64, bool, error) {
-	// 1. Check preferred_city
-	var err error
-	if stmtP == nil {
-		stmtP, err = getDbClient().PrepareStmt(selectPreferredCitySQL)
-		if err != nil {
-			return -1, false, err
-		}
-	}
-
-	var id int64
-	err = stmtP.QueryRow(city).Scan(&id)
-	if err == nil {
-		return id, true, nil
-	}
-
-	if err != sql.ErrNoRows {
-		// Error
-		stmtP.Close()
-		stmtP = nil
-	}
-
-	// 2. Get id from city_list
-	if stmtC == nil {
-		stmtC, err = getDbClient().PrepareStmt(selectCityListSQL)
-		if err != nil {
-			return -1, false, err
-		}
-	}
-
-	err = stmtC.QueryRow(city).Scan(&id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// Not Found
-			return -1, false, nil
-		}
-		stmtC.Close()
-		stmtC = nil
-		return -1, false, err
-	}
-
-	return id, true, nil
 }
 
 // RemoveShiFromJPCities removes '-shi' from names of JP cities.
