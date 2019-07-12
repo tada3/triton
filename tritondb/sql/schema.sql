@@ -136,6 +136,10 @@ INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
 INSERT INTO translation (src, dst) VALUES ('セブ', 'Cebu City');
 INSERT INTO translation (src, dst) VALUES ('スリジャヤワルダナプラコッテ', 'Sri Jayewardenepura Kotte');
 INSERT INTO translation (src, dst) VALUES ('モガディシオ', 'Mogadishu');
+INSERT INTO translation (src, dst) VALUES ('HK', 'Hong Kong');
+
+
+
 
 
  select city.countryName, city.officialName, code.officialName from country_city AS city, country_code AS code WHERE city.countryName = code.officialName OR city.officialName = code.officialName;

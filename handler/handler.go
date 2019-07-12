@@ -155,13 +155,14 @@ func handleTomorrowWeather(req protocol.CEKRequest, userID string) protocol.CEKR
 			log.Info("CountryName is not found: %s\n", city.CountryCode)
 		}
 	}
-	if countryName != "" && countryName != city.CityName {
+	cityName := convertCityName(city.CityName)
+	if countryName != "" && countryName != cityName {
 		msg = game.GetMessage(game.TomorrowWeather2, util.GetDayStr(tw.Day),
-			countryName, city.CityName, tw.Weather,
+			countryName, cityName, tw.Weather,
 			util.GetTempRangeStr(tw.TempMin, tw.TempMax))
 	} else {
 		msg = game.GetMessage(game.TomorrowWeather, util.GetDayStr(tw.Day),
-			city.CityName, tw.Weather,
+			cityName, tw.Weather,
 			util.GetTempRangeStr(tw.TempMin, tw.TempMax))
 	}
 
@@ -207,7 +208,7 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 
 		// 3. Set cache
 		// Although city info should have been added more details in GetCurrentWeather,
-		// we use the original cityInput as the cache key. If you use the elaborated 
+		// we use the original cityInput as the cache key. If you use the elaborated
 		// city info as the cache key, cache would not hit.
 		weather.SetCurrentWeatherToCache(cityInput, cw)
 	}
@@ -223,10 +224,11 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 				log.Info("CountryName is not found: %s", city.CountryCode)
 			}
 		}
-		if countryName != "" && countryName != city.CityName {
-			msg = game.GetMessage(game.CurrentWeather2, countryName, city.CityName, cw.Weather, cw.TempStr)
+		cityName := convertCityName(city.CityName)
+		if countryName != "" && countryName != cityName {
+			msg = game.GetMessage(game.CurrentWeather2, countryName, cityName, cw.Weather, cw.TempStr)
 		} else {
-			msg = game.GetMessage(game.CurrentWeather, city.CityName, cw.Weather, cw.TempStr)
+			msg = game.GetMessage(game.CurrentWeather, cityName, cw.Weather, cw.TempStr)
 		}
 	} else {
 		log.Info("Weather for %v is not found.", city)
@@ -236,6 +238,13 @@ func handleCurrentWeather(req protocol.CEKRequest, userID string) protocol.CEKRe
 	// 5. Make response
 	p = protocol.MakeCEKResponsePayload(msg, false)
 	return protocol.MakeCEKResponse(p)
+}
+
+func convertCityName(name string) string {
+	if name == "HK" {
+		return "香港"
+	}
+	return name
 }
 
 func handleTomete(req protocol.CEKRequest, userID string) protocol.CEKResponse {
@@ -355,7 +364,7 @@ func getCityFromPoiSlots(slots map[string]protocol.CEKSlot, cityInfo *model.City
 		return cityInfo, false
 	}
 
-	fmt.Println("XXX poi", poi)
+	log.Debug("poi: %s", poi)
 
 	cityInfo, found, err := tritondb.Poi2City(poi, cityInfo)
 	if err != nil {
