@@ -7,7 +7,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tada3/triton/config"
-	"github.com/tada3/triton/logging"
 )
 
 const (
@@ -15,7 +14,6 @@ const (
 )
 
 var (
-	log        *logging.Entry
 	defaultDbc *TritonDbClient
 )
 
@@ -25,7 +23,6 @@ type TritonDbClient struct {
 }
 
 func init() {
-	log = logging.NewEntry("tritondb")
 	var err error
 	defaultDbc, err = newTritonDbClient()
 	if err != nil {
@@ -44,7 +41,7 @@ func getDbClient() *TritonDbClient {
 func (c *TritonDbClient) Open() error {
 	var err error
 	dsn := getDataSourceName()
-	log.Info("Connecting to MySQL(%s)..", dsn)
+	//log.Info("Connecting to MySQL(%s)..", dsn)
 	c.db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		return err

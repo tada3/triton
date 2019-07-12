@@ -119,6 +119,8 @@ INSERT INTO country_city VALUES ('イースター島','パスクア島','CL','�
 INSERT INTO country_city VALUES ('アメリカ', 'アメリカ合衆国','US','ニューヨーク',1);
 INSERT INTO country_city VALUES ('アメリカ', 'アメリカ合衆国','US','サンフランシスコ',1);
 
+INSERT INTO country_city VALUES ('チェジュ島','済州島','KR','チェジュ', 0);
+
 ALTER TABLE country_city DROP PRIMARY KEY, ADD PRIMARY KEY (countryName, cityName);
 
 

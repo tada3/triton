@@ -28,7 +28,7 @@ func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	if stmtByName2 == nil {
 		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql3)
 		if err != nil {
-			fmt.Printf("ERROR! Prepare failed: %s, stmt=%v\n", err.Error(), selectByNameSql3)
+			log.Error("Prepare failed: %s", selectByNameSql3, err)
 			return nil, false
 		}
 	}
@@ -46,12 +46,13 @@ func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	return cityInfo, true
 }
 
-func Country2City(code string) (*model.CityInfo, bool, error) {
+func Country2City(code string) (*model.CityInfo, bool) {
 	if stmtSelectCountryCity1 == nil {
 		var pErr error
 		stmtSelectCountryCity1, pErr = getDbClient().PrepareStmt(sqlSelectCountryCity2)
 		if pErr != nil {
-			return nil, false, pErr
+			log.Error("Prepare failed: %s", selectByNameSql3, pErr)
+			return nil, false
 		}
 	}
 
@@ -61,14 +62,15 @@ func Country2City(code string) (*model.CityInfo, bool, error) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Not Found
-			return nil, false, nil
+			return nil, false
 		}
 		stmtSelectCountryCity1.Close()
 		stmtSelectCountryCity1 = nil
-		return nil, false, err
+		log.Error("Query failed: %s", selectByNameSql3, err)
+		return nil, false
 	}
 	cityInfo.CityName = city
-	return cityInfo, true, nil
+	return cityInfo, true
 }
 
 func CountryCode2CountryName(code string) (string, bool) {
