@@ -7,6 +7,7 @@ import (
 
 	"time"
 
+	"github.com/tada3/triton/logging"
 	"github.com/tada3/triton/redis"
 	"github.com/tada3/triton/timezone"
 	"github.com/tada3/triton/translation"
@@ -25,10 +26,12 @@ const (
 )
 
 var (
+	log  *logging.Entry
 	owmc *owm.OwmClient
 )
 
 func init() {
+	log = logging.NewEntry("weather")
 	var err error
 	owmc, err = owm.NewOwmClient(OwmBaseURL, OwmAPIKey, 5)
 	if err != nil {
@@ -57,6 +60,7 @@ func getCityIDOrCityNameEN(city *model.CityInfo) (*model.CityInfo, error) {
 			return city, err
 		}
 		city.CityNameEN = ename
+		log.Debug("ename = %s", city.CityNameEN)
 	}
 
 	// 3. city_list
@@ -86,7 +90,7 @@ func getCityIDFromPreferredCity(city *model.CityInfo) (*model.CityInfo, bool, er
 
 func getCityIDFromCityList(city *model.CityInfo) (*model.CityInfo, error) {
 	cityID, countryCode, found := tritondb.GetCityID2(city)
-	fmt.Printf("INFO Result of GetCityID2(%s): %s, %s, %t\n", cityID, countryCode, found)
+	log.Info("Result of GetCityID2(%s): %s, %s, %t", cityID, countryCode, found)
 	if found {
 		city.CityID = cityID
 		if city.CountryCode == "" {
@@ -104,7 +108,7 @@ func GetCurrentWeather(city *model.CityInfo) (*model.CurrentWeather, error) {
 		return nil, err
 	}
 
-	fmt.Printf("INFO city1: %v\n", city)
+	log.Info("city1: %v", city)
 
 	// 2. Get Weather from OWM
 	var cw *model.CurrentWeather
@@ -116,7 +120,7 @@ func GetCurrentWeather(city *model.CityInfo) (*model.CurrentWeather, error) {
 		}
 	} else {
 		// 2-2 Use CityName and CountryCpde
-		fmt.Printf("WARN cityID not found: %v\n", *city)
+		log.Warn("cityID not found: %v", *city)
 		cw, err = owmc.GetCurrentWeatherByName(city.CityNameEN, city.CountryCode)
 		if err != nil {
 			return nil, err
@@ -134,7 +138,7 @@ func GetTomorrowWeather(city *model.CityInfo) (*model.TomorrowWeather, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("INFO city1: %v\n", city)
+	log.Info("city1: %v", city)
 
 	// 2. Get Weather from OWM
 	var wf *owm.OwmWeatherForecast
@@ -146,7 +150,7 @@ func GetTomorrowWeather(city *model.CityInfo) (*model.TomorrowWeather, error) {
 		}
 	} else {
 		// 2-2 Use CityName and CountryCpde
-		fmt.Printf("WARN cityID not found: %v\n", *city)
+		log.Warn("cityID not found: %v", *city)
 		wf, err = owmc.GetWeatherForecastsByName(city.CityNameEN, city.CountryCode)
 		if err != nil {
 			return nil, err
@@ -156,7 +160,7 @@ func GetTomorrowWeather(city *model.CityInfo) (*model.TomorrowWeather, error) {
 	// 3. Get time of Tommorow 12:00
 	now := time.Now().Unix()
 	tnTimestamp, tnTime := timezone.GetTomorrowNoon(wf.City.Coord.Lon, wf.City.Coord.Lat, now)
-	fmt.Printf("DEBUG (now, tnTs, tnTime) = (%d, %d, %v)\n", now, tnTimestamp, tnTime)
+	log.Debug("(now, tnTs, tnTime) = (%d, %d, %v)", now, tnTimestamp, tnTime)
 
 	// 4. Pick up the nearest forecast
 	var tnForecast owm.OwmForecast
@@ -173,7 +177,7 @@ func GetTomorrowWeather(city *model.CityInfo) (*model.TomorrowWeather, error) {
 		tnForecast = f
 		delta = delta1
 	}
-	fmt.Printf("INFO tnForecast: %v\n", tnForecast)
+	log.Info("tnForecast: %v", tnForecast)
 	return createTomorrowWeather(tnForecast, tnTime), nil
 }
 
@@ -210,7 +214,7 @@ func checkCache2(city *model.CityInfo) (*model.CurrentWeather, bool) {
 	cw := &model.CurrentWeather{}
 	err := json.Unmarshal([]byte(v), cw)
 	if err != nil {
-		fmt.Printf("LOG Unmarshal failed: %s\n", err.Error())
+		log.Error("Unmarshal failed!", err)
 		return nil, false
 	}
 	if city.CountryCode == "" {
@@ -231,7 +235,7 @@ func GetCurrentWeatherFromCache(city *model.CityInfo) (*model.CurrentWeather, bo
 	cw := &model.CurrentWeather{}
 	err := json.Unmarshal([]byte(v), cw)
 	if err != nil {
-		fmt.Printf("LOG Unmarshal failed: %s\n", err.Error())
+		log.Error("Unmarshal failed!", err)
 		return nil, false
 	}
 	return cw, true
@@ -240,7 +244,7 @@ func GetCurrentWeatherFromCache(city *model.CityInfo) (*model.CurrentWeather, bo
 func SetCurrentWeatherToCache(city *model.CityInfo, cw *model.CurrentWeather) {
 	b, err := json.Marshal(cw)
 	if err != nil {
-		fmt.Printf("LOG Marshal failed: %s\n", err.Error())
+		log.Error("Marshal failed!", err)
 		return
 	}
 	v := string(b)
@@ -250,7 +254,7 @@ func SetCurrentWeatherToCache(city *model.CityInfo, cw *model.CurrentWeather) {
 func setCache2(city *model.CityInfo, cw *model.CurrentWeather) {
 	b, err := json.Marshal(cw)
 	if err != nil {
-		fmt.Printf("LOG Marshal failed: %s\n", err.Error())
+		log.Error("Marshal failed!", err)
 		return
 	}
 	v := string(b)
@@ -263,7 +267,7 @@ func setCache3(city *model.CityInfo, cw *model.CurrentWeather, countryCode strin
 	}
 	b, err := json.Marshal(cw)
 	if err != nil {
-		fmt.Printf("LOG Marshal failed: %s\n", err.Error())
+		log.Error("LOG Marshal failed!", err)
 		return
 	}
 	v := string(b)

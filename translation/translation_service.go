@@ -1,9 +1,9 @@
 package translation
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/tada3/triton/logging"
 	"github.com/tada3/triton/redis"
 	"github.com/tada3/triton/translation/ms"
 	"github.com/tada3/triton/tritondb"
@@ -15,13 +15,17 @@ const (
 	cacheTimeout        time.Duration = 24 * time.Hour
 )
 
-var tr Translator
+var (
+	tr  Translator
+	log *logging.Entry
+)
 
 type Translator interface {
 	Translate(string) (string, error)
 }
 
 func init() {
+	log = logging.NewEntry("trans")
 	var err error
 	tr, err = ms.NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
 	if err != nil {
@@ -36,16 +40,16 @@ func Translate(w string) (string, error) {
 	// 1. Check cache
 	tw, hit = checkCache(w)
 	if hit {
-		fmt.Printf("LOG Cache Hit %s\n", w)
+		log.Info("LOG Cache Hit %s\n", w)
 		return tw, nil
 	}
 
-	fmt.Printf("LOG Cache Miss %s\n", w)
+	log.Info("LOG Cache Miss %s\n", w)
 	// 2. Translate by DB
 	tw, hit, err = tritondb.TranslateByDB(w)
 	if err != nil {
 		// Just ignore here
-		fmt.Printf("ERROR! TranslateByDB() failed: %v", err.Error())
+		log.Error("ERROR! TranslateByDB() failed.", err)
 	}
 	if !hit {
 		// 3. Translate by MS API
