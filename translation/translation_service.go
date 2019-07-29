@@ -11,7 +11,7 @@ import (
 
 const (
 	msTranslatorBaseURL               = "https://api.cognitive.microsofttranslator.com/"
-	msTranslatorAPIKey                = "78f442ae6aa44e52a221ec70441328c6"
+	msTranslatorAPIKey                = "987ce01818af428eab13cf5c1b99605a"
 	cacheTimeout        time.Duration = 24 * time.Hour
 )
 
