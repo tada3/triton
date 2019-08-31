@@ -5,14 +5,17 @@ import (
 
 	"github.com/tada3/triton/logging"
 	"github.com/tada3/triton/redis"
-	"github.com/tada3/triton/translation/ms"
+	"github.com/tada3/triton/translation/ibm"
 	"github.com/tada3/triton/tritondb"
 )
 
 const (
-	msTranslatorBaseURL               = "https://api.cognitive.microsofttranslator.com/"
-	msTranslatorAPIKey                = "987ce01818af428eab13cf5c1b99605a"
-	cacheTimeout        time.Duration = 24 * time.Hour
+	ibmTranslatorBaseURL = "https://gateway.watsonplatform.net/"
+	ibmTranslatorAPIKey  = "0X0NrhL0wUYsDmWKAAIegoUhOcUp3cazYNz6-Rv-81uJ"
+	msTranslatorBaseURL  = "https://api.cognitive.microsofttranslator.com/"
+	msTranslatorAPIKey   = "987ce01818af428eab13cf5c1b99605a"
+
+	cacheTimeout time.Duration = 24 * time.Hour
 )
 
 var (
@@ -27,7 +30,8 @@ type Translator interface {
 func init() {
 	log = logging.NewEntry("trans")
 	var err error
-	tr, err = ms.NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
+	//tr, err = ms.NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
+	tr, err = ibm.NewIBMTranslatorClient(ibmTranslatorBaseURL, ibmTranslatorAPIKey, 1)
 	if err != nil {
 		panic(err)
 	}

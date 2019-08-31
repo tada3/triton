@@ -5,10 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/tada3/triton/logging"
+)
+
+var (
+	log *logging.Entry
 )
 
 type IBMTranslatorClient struct {
@@ -18,8 +25,8 @@ type IBMTranslatorClient struct {
 }
 
 type TranslationRequest struct {
-	Text    string `json:text`
-	ModelId string `json:model_id`
+	Text    string `json:"text"`
+	ModelId string `json:"model_id"`
 }
 
 type TranslationResponse struct {
@@ -32,7 +39,14 @@ type TranslationResult struct {
 	Text string `json:"translation"`
 }
 
+func init() {
+	log = logging.NewEntry("trans_ibm")
+}
+
+// NewIBMTranslatorClient creates a new instance of Translator
+// that uses IBM Translation API as the backend.
 func NewIBMTranslatorClient(baseURL, apiKey string, timeout int) (*IBMTranslatorClient, error) {
+	log.Info("Creating a new client for %s..", baseURL)
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
@@ -46,7 +60,8 @@ func NewIBMTranslatorClient(baseURL, apiKey string, timeout int) (*IBMTranslator
 }
 
 func (c *IBMTranslatorClient) Translate(w string) (string, error) {
-	req, err := c.NewPostRequest("language-translator/api/v3/translate", w)
+	log.Debug("Translate %s.", w)
+	req, err := c.newPostRequest("language-translator/api/v3/translate", w)
 	if err != nil {
 		return "", err
 	}
@@ -55,15 +70,26 @@ func (c *IBMTranslatorClient) Translate(w string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		var bodyMsg string
+		if err != nil {
+			bodyMsg = err.Error()
+		} else {
+			bodyMsg = string(body)
+		}
+		errMsg := fmt.Sprintf("Unexpected response: %d, %s\n", res.StatusCode, bodyMsg)
+		return "", errors.New(errMsg)
+	}
 
-	result, err := DecodeResponse(res)
+	result, err := decodeResponse(res)
 	if err != nil {
 		return "", err
 	}
 	return result, nil
 }
 
-func (c *IBMTranslatorClient) NewPostRequest(spath, w string) (*http.Request, error) {
+func (c *IBMTranslatorClient) newPostRequest(spath, w string) (*http.Request, error) {
 
 	// body
 	tr := TranslationRequest{
@@ -83,8 +109,6 @@ func (c *IBMTranslatorClient) NewPostRequest(spath, w string) (*http.Request, er
 	q.Set("version", "2018-05-01")
 	u.RawQuery = q.Encode()
 
-	fmt.Printf("XXX url=%v\n", u.String())
-
 	req, err := http.NewRequest("POST", u.String(), b)
 	if err != nil {
 		return nil, err
@@ -92,11 +116,12 @@ func (c *IBMTranslatorClient) NewPostRequest(spath, w string) (*http.Request, er
 	req.Header.Set("Content-Type", "application/json")
 
 	req.SetBasicAuth("apikey", c.apiKey)
+
 	return req, nil
 }
 
 // DecodeResponse does not work.
-func DecodeResponse(resp *http.Response) (string, error) {
+func decodeResponse(resp *http.Response) (string, error) {
 	defer resp.Body.Close()
 
 	var tr TranslationResponse
@@ -106,7 +131,6 @@ func DecodeResponse(resp *http.Response) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("XXX root=%+v\n", tr)
 	if len(tr.Results) > 0 {
 		r := tr.Results[0]
 		return r.Text, nil
