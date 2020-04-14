@@ -17,5 +17,5 @@ config.yaml
 log/
 mysql.sh
 redis.sh
-
+/triton.sqlite
 
