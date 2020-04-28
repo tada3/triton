@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	selectByNameSql2      = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
-	selectByNameSql3      = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ? ORDER BY RAND() LIMIT 1"
+	selectByNameSql2 = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ?"
+	//selectByNameSql3      = "SELECT IFNULL(countryCode, ''),cityName from country_city WHERE countryName = ? OR officialName = ? ORDER BY RAND() LIMIT 1"
 	sqlSelectCountryCity1 = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry > 0"
 	//sqlSelectCountryCity2      = "SELECT cityName from country_city WHERE countryCode = ? AND isCountry <> 0 ORDER BY RAND() LIMIT 1"
 	selectCountryNameByCodeSQL = "SELECT countryName from country_city WHERE countryCode = ? AND isCountry > 0"
@@ -25,6 +25,54 @@ var (
 	stmtSelectCountryCity1 *sql.Stmt
 )
 
+func CountryName2City2(cn string) (*model.CityInfo, bool) {
+	var err error
+	if stmtByName2 == nil {
+		stmtByName2, err = getDbClient().PrepareStmt(selectByNameSql2)
+		if err != nil {
+			log.Error("Prepare failed: %s", selectByNameSql2, err)
+			return nil, false
+		}
+	}
+
+	rows, err := stmtByName2.Query(cn, cn)
+	if err != nil {
+		stmtByName2.Close()
+		stmtByName2 = nil
+		log.Error("Query failed(1): %s", selectByNameSql2, err)
+		return nil, false
+	}
+	defer rows.Close()
+
+	cityInfos := make([]*model.CityInfo, 0)
+	for rows.Next() {
+		var code string
+		var name string
+		err := rows.Scan(&code, &name)
+		if err != nil {
+			stmtByName2.Close()
+			stmtByName2 = nil
+			log.Error("Query failed(2): %s", selectByNameSql2, err)
+			return nil, false
+		}
+		cityInfos = append(cityInfos, &model.CityInfo{
+			CountryCode: code,
+			CityName:    name,
+		})
+	}
+
+	len := len(cityInfos)
+	if len == 0 {
+		stmtByName2.Close()
+		stmtByName2 = nil
+		return nil, false
+	}
+
+	x := rand.Intn(len)
+	return cityInfos[x], true
+}
+
+/**
 func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	var err error
 	if stmtByName2 == nil {
@@ -47,13 +95,14 @@ func CountryName2City2(cn string) (*model.CityInfo, bool) {
 	}
 	return cityInfo, true
 }
+**/
 
 func Country2City(code string) (*model.CityInfo, bool) {
 	if stmtSelectCountryCity1 == nil {
 		var pErr error
 		stmtSelectCountryCity1, pErr = getDbClient().PrepareStmt(sqlSelectCountryCity1)
 		if pErr != nil {
-			log.Error("Prepare failed: %s", selectByNameSql3, pErr)
+			log.Error("Prepare failed: %s", sqlSelectCountryCity1, pErr)
 			return nil, false
 		}
 	}
@@ -62,7 +111,7 @@ func Country2City(code string) (*model.CityInfo, bool) {
 	if err != nil {
 		stmtSelectCountryCity1.Close()
 		stmtSelectCountryCity1 = nil
-		log.Error("Query failed(1): %s", sqlSelectCountryCity1, err.Error())
+		log.Error("Query failed(1): %s", sqlSelectCountryCity1, err)
 		return nil, false
 	}
 	defer rows.Close()
@@ -74,7 +123,7 @@ func Country2City(code string) (*model.CityInfo, bool) {
 		if err != nil {
 			stmtSelectCountryCity1.Close()
 			stmtSelectCountryCity1 = nil
-			log.Error("Query failed(2): %s", sqlSelectCountryCity1, err.Error())
+			log.Error("Query failed(2): %s", sqlSelectCountryCity1, err)
 			return nil, false
 		}
 		cities = append(cities, city)
