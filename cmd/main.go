@@ -23,7 +23,7 @@ func init() {
 }
 
 func main() {
-	log.Info("Oni ha soto!")
+	log.Info("Fuku wa uchi!")
 
 	log.Info("Listen on port %d", port)
 

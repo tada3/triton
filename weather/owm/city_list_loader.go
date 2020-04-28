@@ -29,7 +29,7 @@ type Coord struct {
 }
 
 func ClearCityList() (int64, error) {
-	dbc, err := db.NewOwmDbClient()
+	dbc, err := db.NewOwmDbClient("sqlite3")
 	if err != nil {
 		return 0, err
 	}
@@ -55,7 +55,7 @@ func LoadCityList(filepath string) (int64, error) {
 	}
 	fmt.Printf("%T: %v\n", t, t)
 
-	dbc, err := db.NewOwmDbClient()
+	dbc, err := db.NewOwmDbClient("sqlite3")
 	if err != nil {
 		return 0, err
 	}
@@ -84,7 +84,7 @@ func LoadCityList(filepath string) (int64, error) {
 }
 
 func RemoveShiFromJPCities() (int64, error) {
-	dbc, err := db.NewOwmDbClient()
+	dbc, err := db.NewOwmDbClient("sqlite3")
 	if err != nil {
 		return 0, err
 	}

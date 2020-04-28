@@ -83,7 +83,7 @@ func (c *MSTranslatorClient) NewPostRequest(spath, w string) (*http.Request, err
 	q.Set("to", "en")
 	u.RawQuery = q.Encode()
 
-	fmt.Printf("XXX url=%v\n", u.String())
+	fmt.Printf("url=%v\n", u.String())
 
 	req, err := http.NewRequest("POST", u.String(), b)
 	if err != nil {
@@ -107,7 +107,7 @@ func DecodeResponse(resp *http.Response) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("XXX root=%+v\n", root)
+	fmt.Printf("root=%+v\n", root)
 	if len(root) > 0 {
 		t := root[0].Translations
 		if len(t) > 0 {

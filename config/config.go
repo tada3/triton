@@ -26,6 +26,8 @@ type Config struct {
 	MySQLUser     string `default:"triton"`
 	MySQLPasswd   string `default:triton`
 
+	SQLiteFile string `default:triton.sqlite`
+
 	RedisHost   string `default:"localhost"`
 	RedisPort   int    `default:6379`
 	RedisPasswd string

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/tada3/triton/config"
 	"github.com/tada3/triton/logging"
 )
@@ -20,14 +21,15 @@ var (
 )
 
 type OwmDbClient struct {
-	db *sql.DB
-	tx *sql.Tx
+	dbType string
+	db     *sql.DB
+	tx     *sql.Tx
 }
 
 func init() {
 	log = logging.NewEntry("db")
 	var err error
-	defaultDbc, err = NewOwmDbClient()
+	defaultDbc, err = NewOwmDbClient("sqlite3")
 	if err != nil {
 		panic(err)
 	}
@@ -41,15 +43,17 @@ func GetDbClient() *OwmDbClient {
 	return defaultDbc
 }
 
-func NewOwmDbClient() (*OwmDbClient, error) {
-	return &OwmDbClient{}, nil
+func NewOwmDbClient(dbType string) (*OwmDbClient, error) {
+	return &OwmDbClient{
+		dbType: dbType,
+	}, nil
 }
 
 func (c *OwmDbClient) Open() error {
 	var err error
-	dsn := getDataSourceName()
-	log.Info("Connecting to MySQL(%s)..", dsn)
-	c.db, err = sql.Open("mysql", dsn)
+	dsn := getDataSourceName(c.dbType)
+	log.Info("Connecting to %s(%s)..", c.dbType, dsn)
+	c.db, err = sql.Open(c.dbType, dsn)
 	if err != nil {
 		return err
 	}
@@ -119,10 +123,14 @@ func (c *OwmDbClient) RollbackTx() {
 	}
 }
 
-func getDataSourceName() string {
+func getDataSourceName(dbType string) string {
 	cfg := config.GetConfig()
 	// Assume cfg is never nil
-	return fmt.Sprintf(dataSourceNameFmt,
-		cfg.MySQLUser, cfg.MySQLPasswd,
-		cfg.MySQLHost, cfg.MySQLPort, cfg.MySQLDatabase)
+	if dbType == "mysql" {
+		return fmt.Sprintf(dataSourceNameFmt,
+			cfg.MySQLUser, cfg.MySQLPasswd,
+			cfg.MySQLHost, cfg.MySQLPort, cfg.MySQLDatabase)
+	} else {
+		return cfg.SQLiteFile
+	}
 }

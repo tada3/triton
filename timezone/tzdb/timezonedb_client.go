@@ -74,7 +74,7 @@ func (c *TzdbClient) NewRequest(spath string, lon, lat float64, t int64) (*http.
 	q.Set("time", strconv.FormatInt(t, 10))
 	u.RawQuery = q.Encode()
 
-	fmt.Printf("XXX url=%v\n", u.String())
+	fmt.Printf("url=%v\n", u.String())
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {

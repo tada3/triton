@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/tada3/triton/config"
 )
 
@@ -18,13 +19,14 @@ var (
 )
 
 type TritonDbClient struct {
-	db *sql.DB
-	tx *sql.Tx
+	dbType string
+	db     *sql.DB
+	tx     *sql.Tx
 }
 
 func init() {
 	var err error
-	defaultDbc, err = newTritonDbClient()
+	defaultDbc, err = newTritonDbClient("sqlite3")
 	if err != nil {
 		panic(err)
 	}
@@ -40,9 +42,9 @@ func getDbClient() *TritonDbClient {
 
 func (c *TritonDbClient) Open() error {
 	var err error
-	dsn := getDataSourceName()
-	//log.Info("Connecting to MySQL(%s)..", dsn)
-	c.db, err = sql.Open("mysql", dsn)
+	dsn := getDataSourceName(c.dbType)
+	//log.Info("XXX Connecting2 to %s(%s)..", c.dbType, dsn)
+	c.db, err = sql.Open(c.dbType, dsn)
 	if err != nil {
 		return err
 	}
@@ -113,14 +115,20 @@ func (c *TritonDbClient) RollbackTx() {
 	}
 }
 
-func newTritonDbClient() (*TritonDbClient, error) {
-	return &TritonDbClient{}, nil
+func newTritonDbClient(dbType string) (*TritonDbClient, error) {
+	return &TritonDbClient{
+		dbType: dbType,
+	}, nil
 }
 
-func getDataSourceName() string {
+func getDataSourceName(dbType string) string {
 	cfg := config.GetConfig()
 	// Assume cfg is never nil
-	return fmt.Sprintf(dataSourceNameFmt,
-		cfg.MySQLUser, cfg.MySQLPasswd,
-		cfg.MySQLHost, cfg.MySQLPort, cfg.MySQLDatabase)
+	if dbType == "mysql" {
+		return fmt.Sprintf(dataSourceNameFmt,
+			cfg.MySQLUser, cfg.MySQLPasswd,
+			cfg.MySQLHost, cfg.MySQLPort, cfg.MySQLDatabase)
+	} else {
+		return cfg.SQLiteFile
+	}
 }

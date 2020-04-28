@@ -15,7 +15,7 @@ var stmt *sql.Stmt
 
 func init() {
 	var err error
-	dbc, err = db.NewOwmDbClient()
+	dbc, err = db.NewOwmDbClient("sqlite3")
 	if err != nil {
 		panic(err)
 	}
