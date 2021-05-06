@@ -9,6 +9,6 @@ require (
 	github.com/go-redis/redis v6.15.7+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/koding/multiconfig v0.0.0-20171124222453-69c27309b2d7
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	github.com/mattn/go-sqlite3 v1.13.0
+	github.com/onsi/gomega v1.12.0 // indirect
 )

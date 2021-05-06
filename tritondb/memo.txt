@@ -1,0 +1,13 @@
+
+curl -X POST --user apikey:c4FFCRaBeJs4YlMBrASPRkkYa98yk40ChuguUSrn9Y8J \
+--header "Content-Type: application/json" \
+--data "{\"text\":[\"Hello, how are you today?\"],\"model_id\":\"en-es\"}" \
+"https://api.us-south.language-translator.watson.cloud.ibm.com/instances/863c1970-124c-45c1-b86b-a01ecc6fbe57/v3/translate?version=2018-05-01"
+
+
+
+
+curl -X POST --user apikey:c4FFCRaBeJs4YlMBrASPRkkYa98yk40ChuguUSrn9Y8J \
+--header "Content-Type: application/json" \
+--data "{\"text\":[\"金曜日\"],\"model_id\":\"ja-en\"}" \
+"https://api.us-south.language-translator.watson.cloud.ibm.com/instances/863c1970-124c-45c1-b86b-a01ecc6fbe57/v3/translate?version=2018-05-01"

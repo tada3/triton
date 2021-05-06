@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	ibmTranslatorBaseURL = "https://gateway.watsonplatform.net/"
-	ibmTranslatorAPIKey  = "0X0NrhL0wUYsDmWKAAIegoUhOcUp3cazYNz6-Rv-81uJ"
+	ibmTranslatorBaseURL = "https://api.us-south.language-translator.watson.cloud.ibm.com/instances/863c1970-124c-45c1-b86b-a01ecc6fbe57"
+	ibmTranslatorAPIKey  = "c4FFCRaBeJs4YlMBrASPRkkYa98yk40ChuguUSrn9Y8J"
 	msTranslatorBaseURL  = "https://api.cognitive.microsofttranslator.com/"
 	msTranslatorAPIKey   = "987ce01818af428eab13cf5c1b99605a"
 
