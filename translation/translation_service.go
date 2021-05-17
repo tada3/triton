@@ -3,6 +3,7 @@ package translation
 import (
 	"time"
 
+	"github.com/tada3/triton/config"
 	"github.com/tada3/triton/logging"
 	"github.com/tada3/triton/redis"
 	"github.com/tada3/triton/translation/ibm"
@@ -10,12 +11,8 @@ import (
 )
 
 const (
-	ibmTranslatorBaseURL = "https://api.us-south.language-translator.watson.cloud.ibm.com/instances/863c1970-124c-45c1-b86b-a01ecc6fbe57"
-	ibmTranslatorAPIKey  = "c4FFCRaBeJs4YlMBrASPRkkYa98yk40ChuguUSrn9Y8J"
-	msTranslatorBaseURL  = "https://api.cognitive.microsofttranslator.com/"
-	msTranslatorAPIKey   = "987ce01818af428eab13cf5c1b99605a"
-
-	cacheTimeout time.Duration = 24 * time.Hour
+	ibmTranslatorBaseURL               = "https://api.us-south.language-translator.watson.cloud.ibm.com/instances/863c1970-124c-45c1-b86b-a01ecc6fbe57"
+	cacheTimeout         time.Duration = 24 * time.Hour
 )
 
 var (
@@ -29,9 +26,10 @@ type Translator interface {
 
 func init() {
 	log = logging.NewEntry("trans")
+	cfg := config.GetConfig()
+	apiKey := cfg.TranslationAPIKey
 	var err error
-	//tr, err = ms.NewMSTranslatorClient(msTranslatorBaseURL, msTranslatorAPIKey, 5)
-	tr, err = ibm.NewIBMTranslatorClient(ibmTranslatorBaseURL, ibmTranslatorAPIKey, 1)
+	tr, err = ibm.NewIBMTranslatorClient(ibmTranslatorBaseURL, apiKey, 1)
 	if err != nil {
 		panic(err)
 	}

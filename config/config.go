@@ -33,6 +33,8 @@ type Config struct {
 	RedisPasswd string
 
 	SoundFileBaseUrl string
+
+	TranslationAPIKey string 
 }
 
 func init() {
